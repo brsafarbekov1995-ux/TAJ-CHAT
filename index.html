@@ -24,7 +24,7 @@
                 const now = new Date();
                 push(messagesRef, { 
                     text: input.value, 
-                    sender: 'me',
+                    sender: 'me', // Барои паёмҳои худ 'me' гузоред
                     time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     date: now.toLocaleDateString()
                 });
@@ -37,6 +37,7 @@
             const msg = data.val();
             const chatBox = document.getElementById("chat-box");
 
+            // Намоиши сана танҳо агар сана тағйир ёбад
             if (msg.date !== lastDate) {
                 const dateDiv = document.createElement("div");
                 dateDiv.className = 'date-divider';
@@ -46,13 +47,12 @@
             }
 
             const div = document.createElement("div");
-            // Паёмҳои 'me' ба рост, дигарон ба чап
+            // Агар 'sender' 'me' бошад, класси 'my-message' (рост), вагарна 'received' (чап)
             div.className = msg.sender === 'me' ? 'my-message' : 'received-message';
+            
             div.innerHTML = `
                 <div>${msg.text}</div>
-                <div style="font-size: 0.7rem; opacity: 0.7; margin-top: 5px; text-align: right;">
-                    ${msg.time}
-                </div>
+                <div class="time-stamp">${msg.time}</div>
             `;
             chatBox.appendChild(div);
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -63,17 +63,15 @@
         body { font-family: sans-serif; background: #f0f2f5; height: 100dvh; display: flex; flex-direction: column; }
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         
-        /* Паёмҳои шумо (рост) */
         .my-message { align-self: flex-end; background: #dcf8c6; padding: 10px; border-radius: 15px 15px 0 15px; max-width: 80%; }
-        
-        /* Паёмҳои дигарон (чап) */
         .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 15px 15px 15px 0; max-width: 80%; }
         
-        .date-divider { align-self: center; background: #d3d3d3; color: #555; padding: 5px 15px; border-radius: 15px; font-size: 0.75rem; margin: 10px 0; }
+        .date-divider { align-self: center; background: #bbb; color: #fff; padding: 5px 15px; border-radius: 15px; font-size: 0.7rem; margin: 15px 0; }
+        .time-stamp { font-size: 0.65rem; color: #666; margin-top: 4px; text-align: right; }
         
         .input-panel { padding: 10px; display: flex; gap: 8px; background: #fff; }
         textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; }
-        .btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #007bff; background: #fff; cursor: pointer; }
+        .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #007bff; color: white; cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body>
