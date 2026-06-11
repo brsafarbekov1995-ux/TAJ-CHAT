@@ -52,14 +52,18 @@
                 this.style.height = (this.scrollHeight) + "px";
             });
 
-            // Drag and Drop
+            // Drag and Drop (Ислоҳшуда)
             input.setAttribute("draggable", "true");
             input.addEventListener("dragstart", (e) => e.dataTransfer.setData("text/plain", input.value));
             chatBox.addEventListener("dragover", (e) => e.preventDefault());
             chatBox.addEventListener("drop", (e) => {
                 e.preventDefault();
                 const text = e.dataTransfer.getData("text/plain");
-                if (text) { window.sendMessage(text); }
+                if (text) { 
+                    window.sendMessage(text); 
+                    input.value = "";             // Акнун холӣ мешавад
+                    input.style.height = "45px";  // Баландии аслӣ бармегардад
+                }
             });
 
             // Touch Gestures
