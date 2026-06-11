@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TAJ CHAT</title>
-<script type="module">
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getDatabase, ref, push, onChildAdded, remove, onChildRemoved } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
@@ -53,7 +53,7 @@
             
             const convertLinks = (text) => {
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
-                return text.replace(urlRegex, '<a href="$1" target="_blank" style="color: blue;">$1</a>');
+                return text.replace(urlRegex, '<a href="$1" target="_blank" style="color: blue; text-decoration: underline;">$1</a>');
             };
 
             if (msg.date !== lastDate) {
@@ -69,14 +69,11 @@
             div.className = msg.senderId === myId ? 'my-message' : 'received-message';
             div.innerHTML = `<div>${convertLinks(msg.text)}</div><div class="time-stamp">${msg.time}</div>`;
             
+            // Ҳама метавонанд паёмро нест кунанд (бо рост-клик ё пахши дароз)
             div.addEventListener("contextmenu", (e) => {
                 e.preventDefault();
-                if (msg.senderId === myId) {
-                    if (confirm("Оё ин паёмро нест кардан мехоҳед?")) {
-                        remove(ref(db, 'messages/' + msgKey));
-                    }
-                } else {
-                    alert("Шумо танҳо паёмҳои худро нест карда метавонед!");
+                if (confirm("Оё ин паёмро барои ҳама нест кардан мехоҳед?")) {
+                    remove(ref(db, 'messages/' + msgKey));
                 }
             });
             
@@ -86,6 +83,15 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             const input = document.getElementById("message-input");
+            
+            // Ирсол бо тугмаи Enter
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    window.sendMessage();
+                }
+            });
+
             input.addEventListener("input", function() {
                 this.style.height = "auto";
                 this.style.height = (this.scrollHeight) + "px";
@@ -94,86 +100,27 @@
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        /* Ислоҳи CSS барои пешгирии зум дар ҳама браузерҳо */
-        body { 
-            font-family: sans-serif; 
-            background: #f0f0f0; 
-            height: 100dvh; 
-            display: flex; 
-            flex-direction: column;
-            overflow: hidden; 
-            -webkit-text-size-adjust: 100%;
-        }
-        
-        .header {
-            background: #ffffff;
-            color: #333;
-            padding: 15px;
-            margin: 10px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-            border: 1px solid #ddd;
-            border-radius: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            z-index: 20;
-        }
-
-        .chat-box { 
-            flex: 1; 
-            padding: 20px; 
-            overflow-y: auto; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
-            background: #ffffff;
-            mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
-        }
-        
-        .my-message, .received-message { 
-            padding: 10px; max-width: 80%; 
-            word-wrap: break-word; 
-        }
+        body { font-family: sans-serif; background: #f0f0f0; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; -webkit-text-size-adjust: 100%; }
+        .header { background: #ffffff; color: #333; padding: 15px; margin: 10px; text-align: center; font-weight: bold; font-size: 1.2rem; border: 1px solid #ddd; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 20; }
+        .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #ffffff; }
+        .my-message, .received-message { padding: 10px; max-width: 80%; word-wrap: break-word; cursor: pointer; }
         .my-message { align-self: flex-end; background: #dcf8c6; border-radius: 15px 15px 0 15px; }
         .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; border-radius: 15px 15px 15px 0; }
-        
         .date-divider { align-self: center; background: #ccc; color: #fff; padding: 5px 15px; border-radius: 15px; font-size: 0.7rem; margin: 10px 0; }
         .time-stamp { font-size: 0.6rem; color: #888; margin-top: 4px; text-align: right; }
-        
-        .input-panel { 
-            padding: 10px;
-            background: #ffffff;
-            display: flex;
-            gap: 8px;
-            align-items: flex-end;
-            position: sticky;
-            bottom: 0;
-            z-index: 10;
-        }
-        textarea { 
-            flex: 1; 
-            padding: 12px; 
-            border-radius: 20px; 
-            border: 1px solid #ddd; 
-            resize: none; 
-            height: 45px; 
-            max-height: 120px;
-            font-size: 16px; /* Муҳим: андозаи 16px зумро дар iPhone манъ мекунад */
-        }
+        .input-panel { padding: 10px; background: #ffffff; display: flex; gap: 8px; align-items: flex-end; position: sticky; bottom: 0; z-index: 10; border-top: 1px solid #ddd; }
+        textarea { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #ddd; resize: none; height: 45px; max-height: 120px; font-size: 16px; }
         .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #007bff; color: white; cursor: pointer; flex-shrink: 0; }
-		.my-message a { color: #004085 !important; }
-.received-message a { color: #007bff !important; }
+        .my-message a { color: #004085 !important; }
+        .received-message a { color: #007bff !important; }
     </style>
 </head>
 <body>
-
-   <body>
     <div class="header">TAJ CHAT</div>
     <div class="chat-box" id="chat-box"></div>
-    
     <div class="input-panel">
         <textarea id="message-input" placeholder="Паём..."></textarea>
         <button class="btn" onclick="sendMessage()">➤</button>
     </div>
 </body>
+</html>
