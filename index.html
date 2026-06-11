@@ -8,7 +8,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-        // Танзимоти Firebase-и шумо
         const firebaseConfig = {
             apiKey: "AIzaSyDgcixLDTz5qVBRpQMfxbX8WpSyff76Z28",
             databaseURL: "https://taj-chat-c87de-default-rtdb.firebaseio.com",
@@ -19,36 +18,54 @@
         const db = getDatabase(app);
         const messagesRef = ref(db, 'messages');
 
-        // Функция барои ирсоли паём ба Firebase
         window.sendMessage = () => {
             const input = document.getElementById("message-input");
             if (input.value.trim() !== "") {
-                push(messagesRef, { text: input.value, sender: 'me' });
+                const now = new Date();
+                const timeString = now.getHours().toString().padStart(2, '0') + ":" + 
+                                   now.getMinutes().toString().padStart(2, '0');
+                
+                push(messagesRef, { 
+                    text: input.value, 
+                    sender: 'me', 
+                    time: timeString 
+                });
                 input.value = "";
             }
         };
 
-        // Гӯш кардани паёмҳои нав аз база
         onChildAdded(messagesRef, (data) => {
             const msg = data.val();
             const chatBox = document.getElementById("chat-box");
             const div = document.createElement("div");
-            div.className = msg.sender === 'me' ? 'my-message' : 'received-message';
-            div.textContent = msg.text;
+            
+            // Барои фарқ кардани паёмҳо (дар ин ҷо ҳама 'me' аст, аммо сохтор тайёр аст)
+            div.className = msg.sender === 'me' ? 'message my-message' : 'message received-message';
+            
+            div.innerHTML = `
+                <div class="msg-text">${msg.text}</div>
+                <div class="msg-time">${msg.time}</div>
+            `;
             chatBox.appendChild(div);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
     </script>
     <style>
-        /* Услубҳои шумо */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background: #f0f2f5; height: 100dvh; display: flex; flex-direction: column; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #e5ddd5; height: 100dvh; display: flex; flex-direction: column; }
+        
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .my-message { align-self: flex-end; background: #007bff; color: white; padding: 10px; border-radius: 15px 15px 0 15px; max-width: 80%; }
-        .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 15px 15px 15px 0; max-width: 80%; }
-        .input-panel { padding: 10px; display: flex; gap: 8px; background: #fff; }
-        textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; }
-        .btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #007bff; background: #fff; cursor: pointer; }
+        
+        .message { padding: 8px 12px; border-radius: 8px; max-width: 75%; position: relative; font-size: 15px; }
+        
+        .my-message { align-self: flex-end; background: #dcf8c6; }
+        .received-message { align-self: flex-start; background: #ffffff; }
+        
+        .msg-time { font-size: 10px; color: #777; text-align: right; margin-top: 4px; }
+        
+        .input-panel { padding: 10px; display: flex; gap: 8px; background: #f0f0f0; }
+        textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; resize: none; height: 45px; }
+        .btn { width: 50px; height: 45px; border-radius: 50%; border: none; background: #007bff; color: white; cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body>
