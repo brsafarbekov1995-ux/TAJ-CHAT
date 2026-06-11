@@ -97,16 +97,7 @@
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        /* Ислоҳи CSS барои пешгирии зум дар ҳама браузерҳо */
-        body { 
-            font-family: sans-serif; 
-            background: #f0f0f0; 
-            height: 100dvh; 
-            display: flex; 
-            flex-direction: column;
-            overflow: hidden; 
-            -webkit-text-size-adjust: 100%;
-        }
+        body { font-family: sans-serif; background: #f0f0f0; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
         
         .header {
             background: #ffffff;
@@ -134,12 +125,15 @@
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
         }
         
+        /* Ҷойгиркунии паёмҳо */
         .my-message, .received-message { 
-            padding: 10px; max-width: 80%; 
+            padding: 10px; 
+            max-width: 80%; 
             word-wrap: break-word; 
+            margin-bottom: 5px;
         }
-        .my-message { align-self: flex-end; background: #dcf8c6; border-radius: 15px 15px 0 15px; }
-        .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; border-radius: 15px 15px 15px 0; }
+        .my-message { align-self: flex-end; background: #dcf8c6; border-radius: 15px 15px 0 15px; text-align: left; }
+        .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; border-radius: 15px 15px 15px 0; text-align: left; }
         
         .date-divider { align-self: center; background: #ccc; color: #fff; padding: 5px 15px; border-radius: 15px; font-size: 0.7rem; margin: 10px 0; }
         .time-stamp { font-size: 0.6rem; color: #888; margin-top: 4px; text-align: right; }
@@ -162,7 +156,7 @@
             resize: none; 
             height: 45px; 
             max-height: 120px;
-            font-size: 16px; /* Муҳим: андозаи 16px зумро дар iPhone манъ мекунад */
+            font-size: 16px; 
         }
         .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #007bff; color: white; cursor: pointer; flex-shrink: 0; }
     </style>
