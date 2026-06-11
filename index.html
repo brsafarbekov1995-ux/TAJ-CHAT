@@ -18,8 +18,12 @@
         const db = getDatabase(app);
         const messagesRef = ref(db, 'messages');
 
-        // ID-и ягона барои ин корбар (метавонед тағйир диҳед)
-        const myId = "user_1"; 
+        // Иловаи мантиқ барои ID-и корбар
+        let myId = localStorage.getItem("chat_user_id");
+        if (!myId) {
+            myId = "user_" + Math.floor(Math.random() * 1000000);
+            localStorage.setItem("chat_user_id", myId);
+        }
 
         window.sendMessage = () => {
             const input = document.getElementById("message-input");
@@ -27,7 +31,7 @@
                 const now = new Date();
                 push(messagesRef, { 
                     text: input.value, 
-                    senderId: myId, // Ин ҷо ID-и худро мефиристед
+                    senderId: myId, 
                     time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     date: now.toLocaleDateString()
                 });
@@ -49,8 +53,8 @@
             }
 
             const div = document.createElement("div");
-            // Агар ID-и фиристанда 'user_1' бошад, пас ин паёми МАН аст (рост)
-            // Дар акси ҳол, ин паёми ДИГАРОН аст (чап)
+            // Агар ID-и фиристанда бо myId баробар бошад, паём дар рост (my-message)
+            // Дар акси ҳол, дар чап (received-message)
             div.className = msg.senderId === myId ? 'my-message' : 'received-message';
             
             div.innerHTML = `
@@ -75,7 +79,7 @@
         .time-stamp { font-size: 0.6rem; color: #888; margin-top: 4px; text-align: right; }
         
         .input-panel { padding: 10px; display: flex; gap: 8px; background: #fff; }
-        textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; }
+        textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; resize: none; height: 45px; }
         .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #007bff; color: white; cursor: pointer; }
     </style>
 </head>
