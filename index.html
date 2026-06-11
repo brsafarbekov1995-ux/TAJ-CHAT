@@ -6,7 +6,7 @@
     <title>TAJ CHAT</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, remove, onChildRemoved } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, remove, onChildRemoved, update } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDgcixLDTz5qVBRpQMfxbX8WpSyff76Z28",
@@ -24,6 +24,7 @@
             localStorage.setItem("chat_user_id", myId);
         }
 
+        // Функсияи ирсоли паём
         window.sendMessage = () => {
             const input = document.getElementById("message-input");
             const textToSend = input.value;
@@ -38,6 +39,31 @@
                 input.value = "";
                 input.style.height = "45px";
             }
+        };
+
+        // Логикаи менюи махсус
+        const menu = document.getElementById("custom-menu");
+        let activeMsgId = null;
+
+        document.addEventListener("click", () => menu.style.display = "none");
+
+        window.editMessage = () => {
+            const newText = prompt("Таҳрири паём:");
+            if (newText !== null && activeMsgId) {
+                update(ref(db, 'messages/' + activeMsgId), { text: newText });
+            }
+            menu.style.display = "none";
+        };
+
+        window.deleteForMe = () => {
+            const el = document.getElementById(activeMsgId);
+            if (el) el.style.display = "none";
+            menu.style.display = "none";
+        };
+
+        window.deleteForEveryone = () => {
+            if (activeMsgId) remove(ref(db, 'messages/' + activeMsgId));
+            menu.style.display = "none";
         };
 
         onChildRemoved(messagesRef, (data) => {
@@ -69,13 +95,14 @@
             div.className = msg.senderId === myId ? 'my-message' : 'received-message';
             div.innerHTML = `<div>${convertLinks(msg.text)}</div><div class="time-stamp">${msg.time}</div>`;
             
-            // Ҳама метавонанд паёмро нест кунанд (бо рост-клик ё пахши дароз)
-            div.addEventListener("contextmenu", (e) => {
+            // Менюи махсус дар пахши дароз
+            div.oncontextmenu = (e) => {
                 e.preventDefault();
-                if (confirm("Оё ин паёмро барои ҳама нест кардан мехоҳед?")) {
-                    remove(ref(db, 'messages/' + msgKey));
-                }
-            });
+                activeMsgId = msgKey;
+                menu.style.top = e.pageY + "px";
+                menu.style.left = e.pageX + "px";
+                menu.style.display = "block";
+            };
             
             chatBox.appendChild(div);
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -83,15 +110,12 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             const input = document.getElementById("message-input");
-            
-            // Ирсол бо тугмаи Enter
             input.addEventListener("keydown", (e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     window.sendMessage();
                 }
             });
-
             input.addEventListener("input", function() {
                 this.style.height = "auto";
                 this.style.height = (this.scrollHeight) + "px";
@@ -108,14 +132,22 @@
         .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; border-radius: 15px 15px 15px 0; }
         .date-divider { align-self: center; background: #ccc; color: #fff; padding: 5px 15px; border-radius: 15px; font-size: 0.7rem; margin: 10px 0; }
         .time-stamp { font-size: 0.6rem; color: #888; margin-top: 4px; text-align: right; }
+        
+        /* Менюи махсус */
+        #custom-menu { display: none; position: absolute; background: white; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1000; width: 200px; }
+        #custom-menu button { display: block; width: 100%; padding: 12px; border: none; background: none; text-align: left; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
+        
         .input-panel { padding: 10px; background: #ffffff; display: flex; gap: 8px; align-items: flex-end; position: sticky; bottom: 0; z-index: 10; border-top: 1px solid #ddd; }
         textarea { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #ddd; resize: none; height: 45px; max-height: 120px; font-size: 16px; }
         .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #007bff; color: white; cursor: pointer; flex-shrink: 0; }
-        .my-message a { color: #004085 !important; }
-        .received-message a { color: #007bff !important; }
     </style>
 </head>
 <body>
+    <div id="custom-menu">
+        <button onclick="editMessage()">✏️ Таҳрир</button>
+        <button onclick="deleteForMe()">👁️ Нест кардан (аз худам)</button>
+        <button onclick="deleteForEveryone()" style="color: red;">🗑️ Нест кардан (аз ҳама)</button>
+    </div>
     <div class="header">TAJ CHAT</div>
     <div class="chat-box" id="chat-box"></div>
     <div class="input-panel">
