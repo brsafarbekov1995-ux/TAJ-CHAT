@@ -38,7 +38,7 @@
                 });
                 if (!textFromDrag) {
                     input.value = "";
-                    input.style.height = "45px"; // Баргардонидан ба ҳолати аввала
+                    input.style.height = "45px";
                 }
             }
         };
@@ -47,13 +47,12 @@
             const input = document.getElementById("message-input");
             const chatBox = document.getElementById("chat-box");
 
-            // Auto-resize барои textarea
             input.addEventListener("input", function() {
                 this.style.height = "auto";
                 this.style.height = (this.scrollHeight) + "px";
             });
 
-            // Drag and Drop (барои компютер)
+            // Drag and Drop
             input.setAttribute("draggable", "true");
             input.addEventListener("dragstart", (e) => e.dataTransfer.setData("text/plain", input.value));
             chatBox.addEventListener("dragover", (e) => e.preventDefault());
@@ -99,24 +98,20 @@
         body { font-family: sans-serif; background: #f0f2f5; height: 100dvh; display: flex; flex-direction: column; }
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         
-        .my-message { align-self: flex-end; background: #dcf8c6; padding: 10px; border-radius: 15px 15px 0 15px; max-width: 80%; }
-        .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 15px 15px 15px 0; max-width: 80%; }
+        .my-message, .received-message { 
+            padding: 10px; max-width: 80%; 
+            word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; 
+        }
+        .my-message { align-self: flex-end; background: #dcf8c6; border-radius: 15px 15px 0 15px; }
+        .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; border-radius: 15px 15px 15px 0; }
         
         .date-divider { align-self: center; background: #ccc; color: #fff; padding: 5px 15px; border-radius: 15px; font-size: 0.7rem; margin: 10px 0; }
         .time-stamp { font-size: 0.6rem; color: #888; margin-top: 4px; text-align: right; }
         
         .input-panel { padding: 10px; background: #fff; display: flex; gap: 8px; align-items: flex-end; border-top: 1px solid #ddd; }
-        
         textarea { 
-            flex: 1; 
-            padding: 12px; 
-            border-radius: 20px; 
-            border: 1px solid #ddd; 
-            resize: none; 
-            height: 45px; 
-            max-height: 120px; /* Қуттӣ аз 120px калон намешавад */
-            overflow-y: auto;  /* Агар паём дароз шавад, дар дохили қуттӣ scroll мешавад */
-            line-height: 1.4;
+            flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #ddd; 
+            resize: none; height: 45px; max-height: 120px; overflow-y: auto; line-height: 1.4;
         }
         .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #007bff; color: white; cursor: pointer; flex-shrink: 0; }
     </style>
