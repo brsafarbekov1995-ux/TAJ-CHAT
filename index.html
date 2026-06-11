@@ -18,26 +18,50 @@
         const db = getDatabase(app);
         const messagesRef = ref(db, 'messages');
 
-        // Иловаи мантиқ барои ID-и корбар
         let myId = localStorage.getItem("chat_user_id");
         if (!myId) {
             myId = "user_" + Math.floor(Math.random() * 1000000);
             localStorage.setItem("chat_user_id", myId);
         }
 
-        window.sendMessage = () => {
+        window.sendMessage = (textFromDrag = null) => {
             const input = document.getElementById("message-input");
-            if (input.value.trim() !== "") {
+            const textToSend = textFromDrag || input.value;
+            
+            if (textToSend.trim() !== "") {
                 const now = new Date();
                 push(messagesRef, { 
-                    text: input.value, 
+                    text: textToSend, 
                     senderId: myId, 
                     time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     date: now.toLocaleDateString()
                 });
-                input.value = "";
+                if (!textFromDrag) input.value = "";
             }
         };
+
+        // Логикаи Drag and Drop
+        document.addEventListener("DOMContentLoaded", () => {
+            const input = document.getElementById("message-input");
+            const chatBox = document.getElementById("chat-box");
+
+            input.setAttribute("draggable", "true");
+            
+            input.addEventListener("dragstart", (e) => {
+                e.dataTransfer.setData("text/plain", input.value);
+            });
+
+            chatBox.addEventListener("dragover", (e) => e.preventDefault());
+            
+            chatBox.addEventListener("drop", (e) => {
+                e.preventDefault();
+                const droppedText = e.dataTransfer.getData("text/plain");
+                if (droppedText) {
+                    window.sendMessage(droppedText);
+                    input.value = "";
+                }
+            });
+        });
 
         let lastDate = ""; 
         onChildAdded(messagesRef, (data) => {
@@ -53,8 +77,6 @@
             }
 
             const div = document.createElement("div");
-            // Агар ID-и фиристанда бо myId баробар бошад, паём дар рост (my-message)
-            // Дар акси ҳол, дар чап (received-message)
             div.className = msg.senderId === myId ? 'my-message' : 'received-message';
             
             div.innerHTML = `
@@ -70,16 +92,14 @@
         body { font-family: sans-serif; background: #f0f2f5; height: 100dvh; display: flex; flex-direction: column; }
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         
-        /* Паёмҳои шумо дар рост */
         .my-message { align-self: flex-end; background: #dcf8c6; padding: 10px; border-radius: 15px 15px 0 15px; max-width: 80%; }
-        /* Паёмҳои дигарон дар чап */
         .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 15px 15px 15px 0; max-width: 80%; }
         
         .date-divider { align-self: center; background: #ccc; color: #fff; padding: 5px 15px; border-radius: 15px; font-size: 0.7rem; margin: 10px 0; }
         .time-stamp { font-size: 0.6rem; color: #888; margin-top: 4px; text-align: right; }
         
         .input-panel { padding: 10px; display: flex; gap: 8px; background: #fff; }
-        textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; resize: none; height: 45px; }
+        textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; resize: none; height: 45px; cursor: grab; }
         .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #007bff; color: white; cursor: pointer; }
     </style>
 </head>
