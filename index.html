@@ -26,33 +26,21 @@
 
         let isSelectionMode = false;
         let selectedMessages = new Set();
-        const menu = document.getElementById("custom-menu");
-        const editModal = document.getElementById("edit-modal");
-        const selectionPanel = document.getElementById("selection-panel");
         let activeMsgId = null;
 
-        // Функсияи ирсол
         window.sendMessage = () => {
             const input = document.getElementById("message-input");
-            const textToSend = input.value;
-            if (textToSend.trim() !== "") {
+            if (input.value.trim() !== "") {
                 const now = new Date();
-                push(messagesRef, { 
-                    text: textToSend, 
-                    senderId: myId, 
-                    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    date: now.toLocaleDateString()
-                });
+                push(messagesRef, { text: input.value, senderId: myId, time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: now.toLocaleDateString() });
                 input.value = "";
-                input.style.height = "45px";
             }
         };
 
-        // Функсияҳои интихоб
         window.enterSelectionMode = (msgKey) => {
             isSelectionMode = true;
-            selectionPanel.style.display = "flex";
-            menu.style.display = "none";
+            document.getElementById("selection-panel").style.display = "flex";
+            document.getElementById("custom-menu").style.display = "none";
             toggleMessageSelection(msgKey);
         };
 
@@ -71,19 +59,19 @@
             isSelectionMode = false;
             selectedMessages.forEach(key => document.getElementById(key).style.border = "");
             selectedMessages.clear();
-            selectionPanel.style.display = "none";
+            document.getElementById("selection-panel").style.display = "none";
         };
 
         window.deleteSelected = () => {
             selectedMessages.forEach(key => remove(ref(db, 'messages/' + key)));
-            cancelSelection();
+            window.cancelSelection();
         };
 
-        // Менюи контекстӣ
         window.openMenu = (e, msgKey) => {
             e.preventDefault();
             if (isSelectionMode) return;
             activeMsgId = msgKey;
+            const menu = document.getElementById("custom-menu");
             menu.style.display = "block";
             menu.style.left = e.pageX + "px";
             menu.style.top = e.pageY + "px";
@@ -91,24 +79,21 @@
 
         window.openEditModal = () => {
             document.getElementById("edit-input").value = document.getElementById(activeMsgId).querySelector('.msg-text').innerText;
-            editModal.style.display = "flex";
-            menu.style.display = "none";
+            document.getElementById("edit-modal").style.display = "flex";
+            document.getElementById("custom-menu").style.display = "none";
         };
 
         window.saveEdit = () => {
             const newText = document.getElementById("edit-input").value;
             if (newText && activeMsgId) update(ref(db, 'messages/' + activeMsgId), { text: newText });
-            editModal.style.display = "none";
+            document.getElementById("edit-modal").style.display = "none";
         };
 
         document.addEventListener("click", (e) => {
-            if (!e.target.closest('#custom-menu') && !e.target.closest('#edit-modal')) menu.style.display = "none";
+            if (!e.target.closest('#custom-menu') && !e.target.closest('#edit-modal')) document.getElementById("custom-menu").style.display = "none";
         });
 
-        const convertLinks = (text) => {
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            return text.replace(urlRegex, '<a href="$1" target="_blank" style="color: blue;">$1</a>');
-        };
+        const convertLinks = (text) => text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: blue;">$1</a>');
 
         let lastDate = "";
         onChildAdded(messagesRef, (data) => {
@@ -121,7 +106,6 @@
                 chatBox.appendChild(dateDiv);
                 lastDate = msg.date;
             }
-            
             const div = document.createElement("div");
             div.id = data.key;
             div.className = msg.senderId === myId ? 'my-message' : 'received-message';
@@ -151,8 +135,11 @@
         
         #custom-menu, #selection-panel { display: none; position: absolute; background: white; border: 1px solid #ddd; z-index: 1000; padding: 10px; border-radius: 10px; }
         #selection-panel { top: 0; width: 100%; display: flex; justify-content: space-between; }
+        
         #edit-modal { display: none; position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: white; padding: 20px; border-radius: 10px; width: 85%; }
+        .modal-content { background: white; padding: 20px; border-radius: 15px; width: 85%; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .modal-buttons button { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         
         .input-panel { padding: 10px; display: flex; gap: 8px; border-top: 1px solid #ddd; background: #fff; }
         textarea { flex: 1; height: 45px; border-radius: 20px; padding: 10px; border: 1px solid #ddd; }
@@ -161,19 +148,19 @@
 </head>
 <body>
     <div id="selection-panel">
-        <button onclick="deleteSelected()" style="color:red">🗑️ Нест кардан</button>
-        <button onclick="cancelSelection()">Бекор</button>
+        <button onclick="deleteSelected()" style="color:red; background:none; border:none; font-weight:bold;">🗑️ Нест кардан</button>
+        <button onclick="cancelSelection()" style="background:none; border:none; font-weight:bold;">Бекор</button>
     </div>
     <div id="custom-menu">
-        <button onclick="openEditModal()">✏️ Таҳрир</button>
-        <button onclick="enterSelectionMode(activeMsgId)">☑️ Интихоб кардан</button>
+        <button onclick="openEditModal()" style="display:block; width:100%; padding:10px; border:none; background:none; text-align:left;">✏️ Таҳрир</button>
+        <button onclick="enterSelectionMode(activeMsgId)" style="display:block; width:100%; padding:10px; border:none; background:none; text-align:left;">☑️ Интихоб кардан</button>
     </div>
     <div id="edit-modal">
         <div class="modal-content">
-            <textarea id="edit-input" style="width: 100%; height: 80px;"></textarea>
-            <div style="margin-top:10px;">
-                <button onclick="saveEdit()">Сабт</button>
-                <button onclick="document.getElementById('edit-modal').style.display='none'">Бекор</button>
+            <textarea id="edit-input" style="width: 100%; height: 80px; padding:10px; border-radius:10px; border:1px solid #ddd;"></textarea>
+            <div class="modal-buttons">
+                <button onclick="document.getElementById('edit-modal').style.display='none'" style="background:#e0e0e0;">Бекор</button>
+                <button onclick="saveEdit()" style="background:#007bff; color:white;">Сабт кардан</button>
             </div>
         </div>
     </div>
