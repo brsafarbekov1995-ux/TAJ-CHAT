@@ -110,22 +110,23 @@
         });
     });
 
-    onChildRemoved(messagesRef, (data) => {
-        const el = document.getElementById(data.key);
-        if (el) el.remove();
-    });
+   onChildAdded(messagesRef, (data) => {
+    const msg = data.val();
+    const chatBox = document.getElementById("chat-box");
+    
+    // ... қисми date-divider-и шумо ...
 
-    let lastDate = "";
-    onChildAdded(messagesRef, (data) => {
-        const msg = data.val();
-        const chatBox = document.getElementById("chat-box");
-        if (msg.date !== lastDate) {
-            const dateDiv = document.createElement("div");
-            dateDiv.className = 'date-divider';
-            dateDiv.textContent = msg.date;
-            chatBox.appendChild(dateDiv);
-            lastDate = msg.date;
-        }
+    const div = document.createElement("div");
+    div.id = data.key;
+    div.className = msg.senderId === myId ? 'my-message' : 'received-message';
+    
+    // Инҷо муҳим аст: linkify-ро барои матни паём истифода баред
+    div.innerHTML = `<div class="msg-text">${linkify(msg.text)}</div><div class="time-stamp">${msg.time}</div>`;
+    
+    div.oncontextmenu = (e) => window.openMenu(e, data.key);
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+});
         
         const div = document.createElement("div");
         div.id = data.key;
@@ -162,6 +163,14 @@
         .input-panel { padding: 10px; background: #fff; display: flex; gap: 8px; border-top: 1px solid #ddd; }
         textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; height: 45px; resize: none; }
         .btn { width: 45px; border-radius: 50%; border: none; background: #007bff; color: white; cursor: pointer; }
+		.msg-text a {
+    color: #007bff; /* Ранги ссылка */
+    text-decoration: underline;
+    pointer-events: auto; /* Ин кафолат медиҳад, ки клик кор мекунад */
+    cursor: pointer;
+    z-index: 100;
+    position: relative;
+}
     </style>
 </head>
 <body>
