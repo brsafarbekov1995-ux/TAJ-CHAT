@@ -143,15 +143,27 @@
         .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; }
         .selected-message { background-color: #add8e6 !important; border: 2px solid #007bff !important; }
         
-        /* Пардаи огоҳинома (АЗ БОЛО МЕБАРОЯД) */
-        #notify-box {
-            position: fixed; top: -80px; left: 50%; transform: translateX(-50%);
-            background: #333; color: white; padding: 15px 25px; border-radius: 50px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 5000;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-weight: bold; white-space: nowrap;
-        }
-        #notify-box.show { top: 20px; }
+  /* Пардаи огоҳинома (Пурра дар паҳноии экран) */
+#notify-box {
+    position: fixed; 
+    top: -100px; 
+    left: 10px; 
+    right: 10px; 
+    background: #333; 
+    color: white; 
+    padding: 18px; 
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+    z-index: 5000;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-weight: bold; 
+    text-align: center;
+    font-size: 16px;
+}
+
+#notify-box.show { 
+    top: 20px; 
+}
 
         #custom-menu { 
             position: absolute; right: 20px; top: 70px; background: white; border-radius: 15px; 
