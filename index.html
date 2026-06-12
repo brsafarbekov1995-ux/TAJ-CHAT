@@ -136,6 +136,14 @@
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
+	window.openHeaderMenu = (e) => {
+    e.stopPropagation(); // Барои он ки меню фавран пӯшида нашавад
+    const menu = document.getElementById("custom-menu");
+    menu.style.display = "block";
+    // Менюро дар зери тугма ҷойгир мекунем
+    menu.style.left = (e.target.getBoundingClientRect().left - 150) + "px"; 
+    menu.style.top = (e.target.getBoundingClientRect().bottom + 5) + "px";
+};
 </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -190,7 +198,10 @@
         </div>
     </div>
 
-    <div class="header">TAJ CHAT</div>
+   <div class="header">
+    <span>TAJ CHAT</span>
+    <button onclick="openHeaderMenu(event)" style="float: right; border: none; background: none; font-size: 20px; cursor: pointer;">⋮</button>
+</div>
     <div class="chat-box" id="chat-box"></div>
     <div class="input-panel">
         <textarea id="message-input" placeholder="Паём..."></textarea>
