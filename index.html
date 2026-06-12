@@ -117,6 +117,13 @@
             div.onclick = () => window.toggleSelect(data.key, div);
             document.getElementById("chat-box").appendChild(div);
         });
+		// Илова кардани ин қисм барои бастани меню ҳангоми клик дар экран
+document.addEventListener("click", (e) => {
+    // Агар клик на ба меню бошад ва на ба тугмаи 3 нуқта
+    if (!e.target.closest('#custom-menu') && !e.target.closest('#menu-trigger')) {
+        menu.style.display = "none";
+    }
+});
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
