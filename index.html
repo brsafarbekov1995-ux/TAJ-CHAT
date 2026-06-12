@@ -136,41 +136,6 @@
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
-	let selectedMessages = new Set(); // Барои нигоҳ доштани ID-и паёмҳои интихобшуда
-
-// Ҳангоми клик кардан (ё дароз пахш кардан)
-const toggleSelect = (msgKey) => {
-    const el = document.getElementById(msgKey);
-    if (selectedMessages.has(msgKey)) {
-        selectedMessages.delete(msgKey);
-        el.classList.remove('msg-selected');
-    } else {
-        selectedMessages.add(msgKey);
-        el.classList.add('msg-selected');
-    }
-    
-    // Намоиши панели идоракунӣ
-    const bar = document.getElementById("selection-bar");
-    bar.style.display = selectedMessages.size > 0 ? "flex" : "none";
-};
-
-// Функсияи несткунии гурӯҳӣ
-window.deleteSelected = (forEveryone) => {
-    selectedMessages.forEach(msgKey => {
-        if (forEveryone) {
-            remove(ref(db, 'messages/' + msgKey));
-        } else {
-            const el = document.getElementById(msgKey);
-            if (el) el.style.display = "none";
-        }
-    });
-    selectedMessages.clear();
-    document.getElementById("selection-bar").style.display = "none";
-};
-
-// Тағйир дар onChildAdded:
-// Барои ҳар як паём воқеаи кликро илова мекунем
-div.onclick = () => toggleSelect(data.key);
 </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -205,8 +170,6 @@ div.onclick = () => toggleSelect(data.key);
     z-index: 100;
     position: relative;
 }
-.msg-selected { background: #b3d7ff !important; border: 2px solid #007bff; }
-.selection-bar { display: none; background: #333; color: white; padding: 10px; justify-content: space-around; }
     </style>
 </head>
 <body>
@@ -227,14 +190,8 @@ div.onclick = () => toggleSelect(data.key);
         </div>
     </div>
 
-  <div class="header">TAJ CHAT</div>
+    <div class="header">TAJ CHAT</div>
     <div class="chat-box" id="chat-box"></div>
-
-    <div id="selection-bar" class="selection-bar">
-        <button onclick="deleteSelected(false)">❌ Аз ман</button>
-        <button onclick="deleteSelected(true)">🗑️ Аз ҳама</button>
-    </div>
-
     <div class="input-panel">
         <textarea id="message-input" placeholder="Паём..."></textarea>
         <button class="btn" onclick="sendMessage()">➤</button>
