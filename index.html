@@ -28,7 +28,7 @@
     const editModal = document.getElementById("edit-modal");
     let activeMsgId = null;
 
-    // Функсия барои табдил додани URL ба ссылка
+    // Функсия барои табдил додани матн ба ссылка
     const linkify = (text) => {
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         return text.replace(urlRegex, '<a href="$1" target="_blank" style="color: blue; text-decoration: underline;">$1</a>');
@@ -52,7 +52,6 @@
                 date: now.toLocaleDateString()
             });
             input.value = "";
-            input.style.height = "45px";
         }
     };
 
@@ -60,24 +59,25 @@
         e.preventDefault();
         activeMsgId = msgKey;
         menu.style.display = "block";
-        let x = e.pageX;
-        let y = e.pageY;
-        if (x + menu.offsetWidth > window.innerWidth) x = window.innerWidth - menu.offsetWidth - 10;
-        if (y + menu.offsetHeight > window.innerHeight) y = window.innerHeight - menu.offsetHeight - 10;
-        menu.style.left = x + "px";
-        menu.style.top = y + "px";
+        menu.style.left = e.pageX + "px";
+        menu.style.top = e.pageY + "px";
     };
 
     window.copyMessage = () => {
-        const textToCopy = document.getElementById(activeMsgId).querySelector('.msg-text').innerText;
-        navigator.clipboard.writeText(textToCopy);
+        const el = document.getElementById(activeMsgId);
+        if (el) {
+            const textToCopy = el.querySelector('.msg-text').innerText;
+            navigator.clipboard.writeText(textToCopy);
+        }
         menu.style.display = "none";
     };
 
     window.openEditModal = () => {
-        const currentText = document.getElementById(activeMsgId).querySelector('.msg-text').innerText;
-        document.getElementById("edit-input").value = currentText;
-        editModal.style.display = "flex";
+        const el = document.getElementById(activeMsgId);
+        if (el) {
+            document.getElementById("edit-input").value = el.querySelector('.msg-text').innerText;
+            editModal.style.display = "flex";
+        }
         menu.style.display = "none";
     };
 
@@ -110,28 +110,27 @@
         });
     });
 
-   onChildAdded(messagesRef, (data) => {
-    const msg = data.val();
-    const chatBox = document.getElementById("chat-box");
-    
-    // ... қисми date-divider-и шумо ...
+    onChildRemoved(messagesRef, (data) => {
+        const el = document.getElementById(data.key);
+        if (el) el.remove();
+    });
 
-    const div = document.createElement("div");
-    div.id = data.key;
-    div.className = msg.senderId === myId ? 'my-message' : 'received-message';
-    
-    // Инҷо муҳим аст: linkify-ро барои матни паём истифода баред
-    div.innerHTML = `<div class="msg-text">${linkify(msg.text)}</div><div class="time-stamp">${msg.time}</div>`;
-    
-    div.oncontextmenu = (e) => window.openMenu(e, data.key);
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
-});
+    let lastDate = "";
+    onChildAdded(messagesRef, (data) => {
+        const msg = data.val();
+        const chatBox = document.getElementById("chat-box");
+        
+        if (msg.date !== lastDate) {
+            const dateDiv = document.createElement("div");
+            dateDiv.className = 'date-divider';
+            dateDiv.textContent = msg.date;
+            chatBox.appendChild(dateDiv);
+            lastDate = msg.date;
+        }
         
         const div = document.createElement("div");
         div.id = data.key;
         div.className = msg.senderId === myId ? 'my-message' : 'received-message';
-        // Истифодаи .innerHTML ва linkify барои коркарди ссылкаҳо
         div.innerHTML = `<div class="msg-text">${linkify(msg.text)}</div><div class="time-stamp">${msg.time}</div>`;
         div.oncontextmenu = (e) => window.openMenu(e, data.key);
         chatBox.appendChild(div);
