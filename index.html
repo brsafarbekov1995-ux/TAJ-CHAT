@@ -27,7 +27,6 @@
         let selectedMessages = [];
         const menu = document.getElementById("custom-menu");
         
-        // Функсияҳои умумӣ
         window.closeModal = (id) => { document.getElementById(id).style.display = "none"; };
         window.showDeleteModal = () => { document.getElementById("delete-modal").style.display = "flex"; menu.classList.remove('show'); };
         window.showClearModal = () => { document.getElementById("clear-modal").style.display = "flex"; menu.classList.remove('show'); };
@@ -52,15 +51,19 @@
             }
         };
 
-        // Функсияи ислоҳшуда барои парда
+        // ФУНКСИЯИ ИСЛОҲШУДА
         window.openMenuAtTop = (e) => {
             e.stopPropagation();
+            // Ҳамеша тафтиш мекунем, ки оё чизе интихоб шудааст ё не
             if (selectedMessages.length === 0) {
+                // Агар интихоб нашуда бошад, пардаи огоҳиномаро мебарорем
                 const notify = document.getElementById("notify-box");
                 notify.classList.add("show");
                 setTimeout(() => notify.classList.remove("show"), 2000);
+                menu.classList.remove('show'); // Менюро ҳатман мепӯшем
                 return;
             }
+            // Агар паём интихоб шуда бошад, менюро менамоем
             menu.classList.toggle('show');
         };
 
@@ -140,16 +143,16 @@
         .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; }
         .selected-message { background-color: #add8e6 !important; border: 2px solid #007bff !important; }
         
-        /* Пардаи огоҳинома */
+        /* Пардаи огоҳинома (АЗ БОЛО МЕБАРОЯД) */
         #notify-box {
-            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-            background: #ff4d4d; color: white; padding: 15px 25px; border-radius: 25px;
+            position: fixed; top: -80px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 15px 25px; border-radius: 50px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 5000;
-            transition: all 0.5s ease; font-weight: bold;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: bold; white-space: nowrap;
         }
         #notify-box.show { top: 20px; }
 
-        /* Menu Styles */
         #custom-menu { 
             position: absolute; right: 20px; top: 70px; background: white; border-radius: 15px; 
             box-shadow: 0 8px 16px rgba(0,0,0,0.2); z-index: 1000; width: 220px; padding: 8px 0;
