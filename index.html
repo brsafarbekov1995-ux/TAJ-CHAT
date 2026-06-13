@@ -153,6 +153,46 @@
                 element.querySelector('.msg-text').innerHTML = msg.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
             }
         });
+		// ... (коди пешинаи шумо: firebaseConfig, app, db ва ғайра)
+
+// Эълони элементҳо
+const input = document.getElementById("message-input");
+const micBtn = document.getElementById("mic-btn"); // Ин ID-ро дар HTML илова кунед
+const sendBtn = document.getElementById("send-btn"); // Ин ID-ро дар HTML илова кунед
+
+// Функсияи нав барои идоракунии тугмаҳо
+function updateButtons() {
+    if (input.value.trim().length > 0 || document.activeElement === input) {
+        micBtn.style.display = "none";
+        sendBtn.style.display = "flex";
+    } else {
+        micBtn.style.display = "flex";
+        sendBtn.style.display = "none";
+    }
+}
+
+// Ҳодисаҳоро пайваст мекунем
+input.addEventListener("input", updateButtons);
+input.addEventListener("focus", updateButtons);
+input.addEventListener("blur", updateButtons);
+
+// ТАҒЙИРОТ ДАР sendMessage:
+window.sendMessage = () => {
+    const inputField = document.getElementById("message-input");
+    if (inputField.value.trim() !== "") {
+        const now = new Date();
+        push(messagesRef, { 
+            text: inputField.value, 
+            senderId: myId, 
+            time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            date: now.toLocaleDateString()
+        });
+        inputField.value = "";
+        updateButtons(); // Барои баргардонидани тугмаи микрофон
+    }
+};
+
+// ... (давоми коди шумо: onChildAdded, onChildRemoved ва ғайра)
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
