@@ -26,6 +26,24 @@
         const menu = document.getElementById("custom-menu");
         const trigger = document.getElementById("menu-trigger");
 
+        // Функсияи ивазшавии тугмаҳо
+        window.toggleButtons = () => {
+            const input = document.getElementById("message-input");
+            const sendBtn = document.getElementById("send-btn");
+            const micBtn = document.getElementById("mic-btn");
+            if (input.value.trim().length > 0) {
+                sendBtn.style.display = "block";
+                micBtn.style.display = "none";
+            } else {
+                sendBtn.style.display = "none";
+                micBtn.style.display = "block";
+            }
+        };
+
+        window.startRecording = () => { 
+            alert("Сабти садо оғоз шуд..."); 
+        };
+
         window.closeModal = (id) => { document.getElementById(id).style.display = "none"; };
 
         window.toggleSelect = (msgKey, element) => {
@@ -56,8 +74,6 @@
             if (selectedMessages.length > 0) {
                 const msgKey = selectedMessages[0];
                 const msgElement = document.getElementById(msgKey);
-                
-                // Танҳо агар паём класси "my-msg" дошта бошад (паёми худи корбар бошад), онро таҳрир кардан мумкин аст
                 if (msgElement.classList.contains('my-msg')) {
                     const textElement = msgElement.querySelector('.msg-text');
                     document.getElementById("edit-input").value = textElement.innerText;
@@ -114,6 +130,7 @@
                     date: now.toLocaleDateString()
                 });
                 input.value = "";
+                toggleButtons();
             }
         };
 
@@ -183,7 +200,8 @@
 
         .input-panel { padding: 10px; background: transparent; display: flex; gap: 8px; align-items: center; }
         textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; height: 40px; resize: none; background: white; }
-        .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #075e54; color: white; cursor: pointer; }
+        .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #075e54; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn img { width: 20px; height: 20px; filter: brightness(0) invert(1); }
     </style>
 </head>
 <body>
@@ -215,8 +233,11 @@
     
     <div class="chat-box" id="chat-box"></div>
     <div class="input-panel">
-        <textarea id="message-input" placeholder="Паём..."></textarea>
-        <button class="btn" onclick="sendMessage()">➤</button>
+        <textarea id="message-input" placeholder="Паём..." oninput="toggleButtons()"></textarea>
+        <button class="btn" id="send-btn" onclick="sendMessage()" style="display: none;">➤</button>
+        <button class="btn" id="mic-btn" onclick="startRecording()">
+            <img src="https://cdn-icons-png.flaticon.com/512/3364/3364184.png" alt="Mic">
+        </button>
     </div>
 </body>
 </html>
