@@ -34,6 +34,7 @@
         const menu = document.getElementById("custom-menu");
         const trigger = document.getElementById("menu-trigger");
 
+        // UI Elements
         const inputArea = document.getElementById("message-input");
         const recordingUi = document.getElementById("recording-ui");
         const previewUi = document.getElementById("preview-ui");
@@ -54,6 +55,7 @@
 
         window.closeModal = (id) => { document.getElementById(id).style.display = "none"; };
 
+        // --- Audio Logic ---
         micBtn.onclick = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -94,7 +96,7 @@
         };
 
         window.playPreview = () => {
-            if (currentAudio) currentAudio.pause();
+            if (currentAudio) currentAudio.pause(); 
             const url = URL.createObjectURL(audioBlob);
             currentAudio = new Audio(url);
             currentAudio.play();
@@ -103,7 +105,7 @@
         window.stopPreview = () => {
             if (currentAudio) {
                 currentAudio.pause();
-                currentAudio.currentTime = 0;
+                currentAudio.currentTime = 0; 
             }
         };
 
@@ -281,7 +283,10 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #e5ddd5; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* Тағйирот барои Header (шаффоф ва хира) */
         .header { background: rgba(7, 94, 84, 0.85); backdrop-filter: blur(8px); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; position: sticky; top: 0; z-index: 1000; }
+        
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .date-divider { align-self: center; background: #e1f3fb; color: #555; padding: 4px 12px; border-radius: 8px; font-size: 11px; margin: 10px 0; }
         .msg-bubble { position: relative; padding: 8px 10px 22px 10px; border-radius: 15px; max-width: 80%; width: fit-content; cursor: pointer; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
@@ -300,6 +305,7 @@
         .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; }
         .btn-action { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; background: #075e54; color: white; }
 
+        /* Тағйирот барои Input Panel (background transparent) */
         .input-panel { padding: 10px; background: transparent; display: flex; gap: 8px; align-items: center; }
         textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; height: 40px; resize: none; }
         .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #075e54; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
