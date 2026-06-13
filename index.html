@@ -226,15 +226,21 @@ if (inputArea.value.trim() !== "") {
             div.id = data.key;
             div.className = `msg-bubble ${msg.senderId === myId ? 'my-msg' : 'rec-msg'}`;
             
-            if(msg.type === 'audio') {
-                div.innerHTML = `<div style="display:flex; align-items:center; gap:8px;">
-                                    <button onclick="new Audio('${msg.audio}').play()" style="background:#075e54; border:none; color:white; border-radius:50%; width:30px; height:30px;">▶</button>
-                                    <span>🎤 ${msg.duration}</span>
-                                 </div><div class="msg-time">${msg.time}</div>`;
-            } else {
-                div.innerHTML = `<div class="msg-text">${msg.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')}</div><div class="msg-time">${msg.time}</div>`;
-            }
-            
+           if(msg.type === 'audio') {
+    div.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px;">
+            <button onclick="toggleChatMessage('${msg.audio}', this)" 
+                    style="background:#075e54; border:none; color:white; border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                ▶
+            </button>
+            <span>🎤 ${msg.duration}</span>
+        </div>
+        <div class="msg-time">${msg.time}</div>`;
+} else {
+    div.innerHTML = `
+        <div class="msg-text">${msg.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')}</div>
+        <div class="msg-time">${msg.time}</div>`;
+}            
             div.onclick = () => window.toggleSelect(data.key, div);
             document.getElementById("chat-box").appendChild(div);
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
@@ -296,6 +302,38 @@ window.cancelAudio = () => {
     inputArea.style.display = "block";
     micBtn.style.display = "flex";
     sendBtn.style.display = "none";
+};
+// ... дигар тағйирёбандаҳои шумо
+let lastDate = "";
+let selectedMessages = [];
+// ...
+let activeAudio = null; // Инро илова кунед
+
+window.toggleChatMessage = (audioUrl, btn) => {
+    if (activeAudio && activeAudio.src !== audioUrl) {
+        activeAudio.pause();
+        if (activeAudio.btnElement) {
+            activeAudio.btnElement.innerText = "▶";
+        }
+    }
+
+    if (!activeAudio || activeAudio.src !== audioUrl) {
+        activeAudio = new Audio(audioUrl);
+        activeAudio.btnElement = btn;
+    }
+
+    if (activeAudio.paused) {
+        activeAudio.play();
+        btn.innerText = "■";
+    } else {
+        activeAudio.pause();
+        btn.innerText = "▶";
+    }
+
+    activeAudio.onended = () => {
+        btn.innerText = "▶";
+        activeAudio.currentTime = 0;
+    };
 };
     </script>
     <style>
