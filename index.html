@@ -29,12 +29,11 @@
         let isRecording = false;
         let startTime;
         let timerInterval;
-        let currentAudio = null; // Барои назорат кардани аудио
+        let currentAudio = null; 
 
         const menu = document.getElementById("custom-menu");
         const trigger = document.getElementById("menu-trigger");
 
-        // UI Elements
         const inputArea = document.getElementById("message-input");
         const recordingUi = document.getElementById("recording-ui");
         const previewUi = document.getElementById("preview-ui");
@@ -55,7 +54,6 @@
 
         window.closeModal = (id) => { document.getElementById(id).style.display = "none"; };
 
-        // --- Audio Logic ---
         micBtn.onclick = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -96,7 +94,7 @@
         };
 
         window.playPreview = () => {
-            if (currentAudio) currentAudio.pause(); // Агар ягон аудио бозистода бошад, онро қатъ мекунем
+            if (currentAudio) currentAudio.pause();
             const url = URL.createObjectURL(audioBlob);
             currentAudio = new Audio(url);
             currentAudio.play();
@@ -105,7 +103,7 @@
         window.stopPreview = () => {
             if (currentAudio) {
                 currentAudio.pause();
-                currentAudio.currentTime = 0; // Аудиро аз аввал мекунад
+                currentAudio.currentTime = 0;
             }
         };
 
@@ -237,10 +235,33 @@
             div.className = `msg-bubble ${msg.senderId === myId ? 'my-msg' : 'rec-msg'}`;
             
             if(msg.type === 'audio') {
+                const audioObj = new Audio(msg.audio);
                 div.innerHTML = `<div style="display:flex; align-items:center; gap:8px;">
-                                    <button onclick="new Audio('${msg.audio}').play()" style="background:#075e54; border:none; color:white; border-radius:50%; width:30px; height:30px;">▶</button>
+                                    <button id="play-${data.key}" style="background:#075e54; border:none; color:white; border-radius:50%; width:30px; height:30px;">▶</button>
+                                    <button id="stop-${data.key}" style="background:orange; border:none; color:white; border-radius:50%; width:30px; height:30px; display:none;">■</button>
                                     <span>🎤 ${msg.duration}</span>
-                               </div><div class="msg-time">${msg.time}</div>`;
+                                </div><div class="msg-time">${msg.time}</div>`;
+                
+                const playBtn = div.querySelector(`#play-${data.key}`);
+                const stopBtn = div.querySelector(`#stop-${data.key}`);
+
+                playBtn.onclick = () => {
+                    audioObj.play();
+                    playBtn.style.display = "none";
+                    stopBtn.style.display = "block";
+                };
+
+                stopBtn.onclick = () => {
+                    audioObj.pause();
+                    audioObj.currentTime = 0;
+                    stopBtn.style.display = "none";
+                    playBtn.style.display = "block";
+                };
+
+                audioObj.onended = () => {
+                    stopBtn.style.display = "none";
+                    playBtn.style.display = "block";
+                };
             } else {
                 div.innerHTML = `<div class="msg-text">${msg.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')}</div><div class="msg-time">${msg.time}</div>`;
             }
@@ -260,7 +281,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #e5ddd5; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
-        .header { background: #075e54; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        .header { background: rgba(7, 94, 84, 0.85); backdrop-filter: blur(8px); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; position: sticky; top: 0; z-index: 1000; }
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .date-divider { align-self: center; background: #e1f3fb; color: #555; padding: 4px 12px; border-radius: 8px; font-size: 11px; margin: 10px 0; }
         .msg-bubble { position: relative; padding: 8px 10px 22px 10px; border-radius: 15px; max-width: 80%; width: fit-content; cursor: pointer; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
@@ -279,11 +300,10 @@
         .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; }
         .btn-action { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; background: #075e54; color: white; }
 
-        .input-panel { padding: 10px; background: #f0f0f0; display: flex; gap: 8px; align-items: center; }
+        .input-panel { padding: 10px; background: transparent; display: flex; gap: 8px; align-items: center; }
         textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; height: 40px; resize: none; }
         .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #075e54; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
-        /* Audio Recording UI */
         #recording-ui { display: none; flex: 1; align-items: center; justify-content: center; gap: 10px; }
         #preview-ui { display: none; flex: 1; align-items: center; justify-content: space-between; background: white; padding: 5px 15px; border-radius: 20px; }
         .wave { width: 3px; height: 15px; background: #075e54; animation: wave-anim 1s infinite; }
