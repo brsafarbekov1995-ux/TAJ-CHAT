@@ -42,6 +42,17 @@
         const stopBtn = document.getElementById("stop-btn");
         const recordTimer = document.getElementById("record-timer");
 
+        // --- ИЛОВАИ 1: Тағйири тугма ҳангоми навиштан ---
+        inputArea.addEventListener("input", () => {
+            if (inputArea.value.trim() !== "") {
+                micBtn.style.display = "none";
+                sendBtn.style.display = "flex";
+            } else {
+                micBtn.style.display = "flex";
+                sendBtn.style.display = "none";
+            }
+        });
+
         window.closeModal = (id) => { document.getElementById(id).style.display = "none"; };
 
         // --- Audio Logic ---
@@ -53,7 +64,6 @@
                 mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
                 mediaRecorder.onstop = () => {
                     audioBlob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
-                    // Нишон додани UI пешнамоиш
                     recordingUi.style.display = "none";
                     previewUi.style.display = "flex";
                 };
@@ -61,7 +71,6 @@
                 mediaRecorder.start();
                 isRecording = true;
                 
-                // UI Toggle
                 inputArea.style.display = "none";
                 micBtn.style.display = "none";
                 recordingUi.style.display = "flex";
@@ -100,7 +109,6 @@
         };
 
         window.sendMessage = async () => {
-            // Агар аудио бошад
             if (audioBlob) {
                 const reader = new FileReader();
                 reader.readAsDataURL(audioBlob);
@@ -116,7 +124,6 @@
                     cancelAudio();
                 };
             } else {
-                // Агар матн бошад
                 if (inputArea.value.trim() !== "") {
                     const now = new Date();
                     push(messagesRef, { 
@@ -126,6 +133,10 @@
                         date: now.toLocaleDateString()
                     });
                     inputArea.value = "";
+                    
+                    // --- ИЛОВАИ 2: Барқарор кардани тугма пас аз ирсол ---
+                    sendBtn.style.display = "none";
+                    micBtn.style.display = "flex";
                 }
             }
         };
@@ -222,7 +233,7 @@
                 div.innerHTML = `<div style="display:flex; align-items:center; gap:8px;">
                                     <button onclick="new Audio('${msg.audio}').play()" style="background:#075e54; border:none; color:white; border-radius:50%; width:30px; height:30px;">▶</button>
                                     <span>🎤 ${msg.duration}</span>
-                                 </div><div class="msg-time">${msg.time}</div>`;
+                               </div><div class="msg-time">${msg.time}</div>`;
             } else {
                 div.innerHTML = `<div class="msg-text">${msg.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')}</div><div class="msg-time">${msg.time}</div>`;
             }
@@ -272,14 +283,14 @@
         @keyframes wave-anim { 0%, 100% { height: 10px; } 50% { height: 25px; } }
         .recording-blink { animation: blink 1s infinite; color: red; }
         @keyframes blink { 50% { opacity: 0; } }
-		#mic-btn img {
-    filter: brightness(0) invert(1); /* Ин рангро сафед мекунад, то бо тугмаи сабз мувофиқ шавад */
-    pointer-events: none; /* Барои он ки клик ба худи тугма расад, на ба иконка */
-}
-#stop-btn img {
-    filter: brightness(0) invert(1); /* Ин рангро сафед мекунад, то бо заминаи сурх мувофиқ бошад */
-    pointer-events: none;
-}
+        #mic-btn img {
+            filter: brightness(0) invert(1);
+            pointer-events: none;
+        }
+        #stop-btn img {
+            filter: brightness(0) invert(1);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -326,11 +337,11 @@
         </div>
         
        <button id="mic-btn" class="btn">
-    <img src="https://cdn-icons-png.flaticon.com/512/3364/3364184.png" alt="Mic" style="width: 24px; height: 24px;">
-</button>
-   <button id="stop-btn" class="btn" style="display:none; background:red;">
-    <img src="https://cdn-icons-png.flaticon.com/512/18401/18401499.png" alt="Stop" style="width: 24px; height: 24px;">
-</button>
+            <img src="https://cdn-icons-png.flaticon.com/512/3364/3364184.png" alt="Mic" style="width: 24px; height: 24px;">
+        </button>
+        <button id="stop-btn" class="btn" style="display:none; background:red;">
+            <img src="https://cdn-icons-png.flaticon.com/512/18401/18401499.png" alt="Stop" style="width: 24px; height: 24px;">
+        </button>
         <button id="send-btn" class="btn" onclick="sendMessage()" style="display: none;">➤</button>
     </div>
 </body>
