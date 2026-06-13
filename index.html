@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TAJ CHAT</title>
     <script type="module">
-       
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded, remove, update, onChildRemoved, onChildChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded, remove, update, onChildRemoved, onChildChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDgcixLDTz5qVBRpQMfxbX8WpSyff76Z28",
@@ -280,75 +279,32 @@ import { getDatabase, ref, push, onChildAdded, remove, update, onChildRemoved, o
             const element = document.getElementById(data.key);
             if (element && msg.text) { element.querySelector('.msg-text').innerHTML = msg.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>'); }
         });
-		// ... (коди пештараи шумо) ...
 
-    // --- ТАШХИСИ ПАЙВАСТШАВӢ ---
-    console.log("Талоши пайвастшавӣ ба Firebase...");
+        // --- ТАШХИСИ ПАЙВАСТШАВӢ (Ислоҳшуда) ---
+        function updateOnlineStatus() {
+            const indicator = document.getElementById("loading-indicator");
+            const body = document.body;
+            
+            if (!navigator.onLine) {
+                indicator.style.display = "flex"; 
+                body.classList.add("offline-mode");
+                console.log("Интернет қатъ шуд.");
+            } else {
+                indicator.style.display = "none";
+                body.classList.remove("offline-mode");
+                console.log("Интернет пайваст шуд.");
+            }
+        }
 
-    onChildAdded(messagesRef, (data) => {
-        console.log("Паём бомуваффақият гирифта шуд:", data.val());
-        // ... (боқии коди `onChildAdded`-и шумо) ...
-    }, (error) => {
-        console.error("ХАТОГИИ ПАЙВАСТШАВӢ:", error);
-    });
-	// 1. Авто-навсозӣ ва захира кардани ҳолат
-// Firebase худаш маълумотро ҳангоми даромадан навсозӣ мекунад, 
-// аммо барои боварӣ ҳосил кардан метавонед инро истифода баред:
-window.addEventListener('load', () => {
-    // Ин ба таври худкор паёмҳои охиринро аз Firebase мегирад
-    console.log("Барнома бор шуд ва пайвастшавӣ оғоз гардид.");
-});
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
 
-// 2. Функсия барои назорати интернет
-function updateOnlineStatus() {
-    const indicator = document.getElementById("loading-indicator");
-    const body = document.body;
-    
-    if (!navigator.onLine) {
-        indicator.style.display = "block";
-        body.classList.add("offline-mode");
-    } else {
-        indicator.style.display = "none";
-        body.classList.remove("offline-mode");
-        // Агар интернет пайваст шуд, саҳифаро навсозӣ мекунем
-        location.reload(); 
-    }
-}
-
-// Функсия барои назорати ҳолати интернет
-function updateOnlineStatus() {
-    const indicator = document.getElementById("loading-indicator");
-    const body = document.body;
-    
-    if (!navigator.onLine) {
-        // Агар интернет қатъ шавад
-        indicator.style.display = "flex"; 
-        body.classList.add("offline-mode");
-        console.log("Интернет қатъ шуд.");
-    } else {
-        // Агар интернет пайваст шавад
-        indicator.style.display = "none";
-        body.classList.remove("offline-mode");
-        console.log("Интернет пайваст шуд, Firebase худкор навсозӣ мекунад.");
-        
-        // Дар ин ҷо reload лозим нест, Firebase худаш маълумоти навро мегирад!
-    }
-}
-
-// Гӯш кардани тағйироти интернет
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-
-// Ҳангоми бор шудани саҳифа низ ҳолатро санҷед
-updateOnlineStatus();
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #e5ddd5; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* Тағйирот барои Header (шаффоф ва хира) */
         .header { background: rgba(7, 94, 84, 0.85); backdrop-filter: blur(8px); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; position: sticky; top: 0; z-index: 1000; }
-        
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .date-divider { align-self: center; background: #e1f3fb; color: #555; padding: 4px 12px; border-radius: 8px; font-size: 11px; margin: 10px 0; }
         .msg-bubble { position: relative; padding: 8px 10px 22px 10px; border-radius: 15px; max-width: 80%; width: fit-content; cursor: pointer; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
@@ -357,75 +313,33 @@ updateOnlineStatus();
         .selected-message { background-color: #95c7f0 !important; }
         .msg-text { font-size: 15px; word-wrap: break-word; }
         .msg-time { position: absolute; bottom: 4px; right: 8px; font-size: 10px; color: #777; }
-        
         #menu-trigger { cursor: pointer; font-size: 24px; }
         #custom-menu { position: absolute; right: 20px; top: 60px; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 9999; width: 180px; padding: 5px 0; opacity: 0; visibility: hidden; transition: 0.2s; }
         #custom-menu.show { opacity: 1; visibility: visible; }
         #custom-menu button { display: block; width: 100%; padding: 10px 15px; border: none; background: none; text-align: left; cursor: pointer; }
-        
         .modal-overlay { display: none; position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 3000; }
         .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; }
         .btn-action { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; background: #075e54; color: white; }
-
-        /* Тағйирот барои Input Panel (background transparent) */
         .input-panel { padding: 10px; background: transparent; display: flex; gap: 8px; align-items: center; }
         textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; height: 40px; resize: none; }
         .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #075e54; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        
         #recording-ui { display: none; flex: 1; align-items: center; justify-content: center; gap: 10px; }
         #preview-ui { display: none; flex: 1; align-items: center; justify-content: space-between; background: white; padding: 5px 15px; border-radius: 20px; }
         .wave { width: 3px; height: 15px; background: #075e54; animation: wave-anim 1s infinite; }
         @keyframes wave-anim { 0%, 100% { height: 10px; } 50% { height: 25px; } }
         .recording-blink { animation: blink 1s infinite; color: red; }
         @keyframes blink { 50% { opacity: 0; } }
-        #mic-btn img { filter: brightness(0) invert(1); pointer-events: none; }
-        #stop-btn img { filter: brightness(0) invert(1); pointer-events: none; }
-		/* Барои хира кардани экран */
-.offline-mode {
-    pointer-events: none;
-    opacity: 0.5;
-    filter: grayscale(1);
-}
-
-/* Элементи боргирӣ (Loading Spinner) - Ислоҳшуда */
-#loading-indicator {
-    display: none; /* Барои оғоз пинҳон мемонад */
-    position: fixed;
-    top: 0; 
-    left: 0;
-    width: 100%; 
-    height: 100%;
-    background: rgba(255, 255, 255, 0.7); /* Фон бо шаффофият */
-    backdrop-filter: blur(3px); /* Хира кардани замина */
-    z-index: 9999;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    pointer-events: all; /* Барои он ки корбар дигар чизеро пахш карда натавонад */
-}
-
-.spinner {
-    width: 50px; 
-    height: 50px; 
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #075e54; /* Ранги асосии чат */
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 15px;
-}
-
-@keyframes spin { 
-    0% { transform: rotate(0deg); } 
-    100% { transform: rotate(360deg); } 
-}
- </style>
+        .offline-mode { pointer-events: none; opacity: 0.5; filter: grayscale(1); }
+        #loading-indicator { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(3px); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; text-align: center; pointer-events: all; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #075e54; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
-<div id="loading-indicator">
-    <div class="spinner"></div>
-    <p>Интернет нест, интизор шавед...</p>
-</div>
+    <div id="loading-indicator">
+        <div class="spinner"></div>
+        <p>Интернет нест, интизор шавед...</p>
+    </div>
     <div id="custom-menu">
         <button onclick="copyMessage()">📋 Нусха кардан</button>
         <button onclick="openEditModal()">✏️ Таҳрир</button>
