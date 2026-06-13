@@ -193,6 +193,23 @@ window.sendMessage = () => {
 };
 
 // ... (давоми коди шумо: onChildAdded, onChildRemoved ва ғайра)
+// Тағйирёбанда барои назорат кардани ҳолати сабт
+let isRecording = false;
+
+// Ҳодиса барои тугмаи микрофон
+micBtn.addEventListener("click", () => {
+    isRecording = !isRecording; // Иваз кардани ҳолат (true <-> false)
+
+    if (isRecording) {
+        micBtn.classList.add("recording");
+        console.log("Сабт оғоз шуд...");
+        // Ин ҷо шумо метавонед коди Web Speech API-и худро барои оғози сабт илова кунед
+    } else {
+        micBtn.classList.remove("recording");
+        console.log("Сабт қатъ шуд.");
+        // Ин ҷо коди қатъ кардани сабтро илова кунед
+    }
+});
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -243,6 +260,18 @@ window.sendMessage = () => {
     color: white;
     cursor: pointer;
     flex-shrink: 0; /* Барои он ки тугма хурд нашавад */
+}
+/* Аниматсияи тугмаи микрофон */
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+}
+
+/* Класс барои ҳолати сабт */
+.recording {
+    background-color: #ff4d4d !important; /* Ранги сурх */
+    animation: pulse 1.5s infinite;      /* Аниматсия */
 }
     </style>
 </head>
