@@ -26,21 +26,6 @@
         const menu = document.getElementById("custom-menu");
         const trigger = document.getElementById("menu-trigger");
 
-        // ФУНКСИЯИ НАВ: Барои иваз кардани тугмаҳо (Микрофон <-> Ирсол)
-        window.toggleButtons = () => {
-            const input = document.getElementById("message-input");
-            const micBtn = document.getElementById("mic-btn");
-            const sendBtn = document.getElementById("send-btn");
-            
-            if (input.value.trim().length > 0) {
-                micBtn.style.display = "none";
-                sendBtn.style.display = "flex";
-            } else {
-                micBtn.style.display = "flex";
-                sendBtn.style.display = "none";
-            }
-        };
-
         window.closeModal = (id) => { document.getElementById(id).style.display = "none"; };
 
         window.toggleSelect = (msgKey, element) => {
@@ -116,11 +101,12 @@
             closeModal('delete-modal');
         };
 
-        // --- ФУНКСИЯҲОИ САБТИ САДО ---
+        // --- ФУНКСИЯҲОИ САБТИ САДО (ИЛОВАГИ) ---
         let mediaRecorder;
         let audioChunks = [];
         let audioBlob = null;
         let isRecording = false;
+        let timerInterval;
 
         window.startRecording = async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -131,7 +117,6 @@
                 audioBlob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
                 document.getElementById("audio-preview-ui").style.display = "flex";
                 document.getElementById("audio-animation").style.display = "none";
-                document.getElementById("send-btn").style.display = "flex"; // Тугмаи ирсол барои овоз
             };
             mediaRecorder.start();
             isRecording = true;
@@ -144,6 +129,7 @@
             mediaRecorder.stop();
             isRecording = false;
             document.getElementById("mic-btn").classList.remove("recording");
+            document.getElementById("send-btn").style.display = "flex";
             document.getElementById("mic-btn").style.display = "none";
         };
 
@@ -179,7 +165,6 @@
                     date: now.toLocaleDateString()
                 });
                 input.value = "";
-                toggleButtons(); // Ба ҳолати аввала баргардонидани тугмаҳо
             }
         };
 
@@ -279,7 +264,7 @@
     <div class="chat-box" id="chat-box"></div>
 
     <div class="input-panel">
-        <textarea id="message-input" placeholder="Паём..." oninput="toggleButtons()"></textarea>
+        <textarea id="message-input" placeholder="Паём..."></textarea>
         
         <div id="audio-animation" style="display: none; flex: 1; align-items: center; justify-content: center; background: white; border-radius: 20px; border: 1px solid #ccc; height: 40px;">
             <span style="color: #075e54;">Сабт шуда истодааст...</span>
