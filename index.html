@@ -26,9 +26,11 @@
 
         let selectedMessages = [];
         const menu = document.getElementById("custom-menu");
+        const trigger = document.getElementById("menu-trigger");
 
         window.closeModal = (id) => { document.getElementById(id).style.display = "none"; };
-        
+
+        // Интихоби паём ва идоракунии намоёнии тугмаи 3 нуқта
         window.toggleSelect = (msgKey, element) => {
             if (selectedMessages.includes(msgKey)) {
                 selectedMessages = selectedMessages.filter(id => id !== msgKey);
@@ -37,17 +39,13 @@
                 selectedMessages.push(msgKey);
                 element.classList.add('selected-message');
             }
+            
+            // Агар паём интихоб шуда бошад, тугмаи 3 нуқта пайдо мешавад
+            trigger.style.display = selectedMessages.length > 0 ? "block" : "none";
         };
 
         window.openMenuAtTop = (e) => {
-            e.stopPropagation(); // Барои он ки клик ба меню таъсир накунад
-            if (selectedMessages.length === 0) {
-                const notify = document.getElementById("notify-box");
-                notify.classList.add("show");
-                setTimeout(() => notify.classList.remove("show"), 2000);
-                menu.classList.remove('show');
-                return;
-            }
+            e.stopPropagation(); 
             menu.classList.toggle('show');
         };
 
@@ -91,12 +89,15 @@
                     document.getElementById(msgKey)?.remove();
                 } else remove(ref(db, 'messages/' + msgKey));
             });
-            selectedMessages = []; closeModal('delete-modal');
+            selectedMessages = []; 
+            trigger.style.display = "none"; // Пинҳон кардани тугма
+            closeModal('delete-modal');
         };
 
         window.clearMyChat = (type) => {
             if (type === 'me') { document.getElementById("chat-box").innerHTML = ""; localStorage.setItem("hidden_msgs", "[]"); }
             else if (type === 'everyone' && confirm("Барои ҲАМА пок шавад?")) { remove(messagesRef); document.getElementById("chat-box").innerHTML = ""; }
+            trigger.style.display = "none"; // Пинҳон кардани тугма
             closeModal('clear-modal');
         };
 
@@ -132,8 +133,8 @@
         .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; }
         .selected-message { background-color: #add8e6 !important; border: 2px solid #007bff !important; }
         
-        #notify-box { position: fixed; top: -100px; left: 10px; right: 10px; background: #333; color: white; padding: 18px; border-radius: 15px; z-index: 9999; transition: all 0.4s; text-align: center; font-weight: bold; }
-        #notify-box.show { top: 20px; }
+        /* Тугмаи 3 нуқта дар аввал пинҳон аст */
+        #menu-trigger { display: none; cursor: pointer; font-size: 24px; padding: 0 10px; }
         
         #custom-menu { position: absolute; right: 20px; top: 70px; background: white; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); z-index: 9999; width: 220px; padding: 8px 0; opacity: 0; visibility: hidden; transition: all 0.2s; }
         #custom-menu.show { opacity: 1; visibility: visible; }
@@ -149,7 +150,6 @@
     </style>
 </head>
 <body>
-    <div id="notify-box">Паёмеро интихоб кунед! ⚠️</div>
     <div id="custom-menu">
         <button onclick="copyMessage()">📋 Нусха кардан</button>
         <button onclick="openEditModal()">✏️ Таҳрир</button>
@@ -165,7 +165,13 @@
     <div id="edit-modal" class="modal-overlay" onclick="if(event.target==this) closeModal('edit-modal')">
         <div class="modal-content"><textarea id="edit-input" style="width: 100%; height: 80px;"></textarea><button onclick="saveEdit()" style="background:#007bff;color:white;">Сабт кардан</button></div>
     </div>
-    <div class="header"><span></span> <div>TAJ CHAT</div> <span id="menu-trigger" onclick="openMenuAtTop(event)">⋮</span></div>
+    
+    <div class="header">
+        <span></span> 
+        <div>TAJ CHAT</div> 
+        <span id="menu-trigger" onclick="openMenuAtTop(event)">⋮</span>
+    </div>
+    
     <div class="chat-box" id="chat-box"></div>
     <div class="input-panel">
         <textarea id="message-input" placeholder="Паём..."></textarea>
