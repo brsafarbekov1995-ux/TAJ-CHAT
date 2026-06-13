@@ -29,6 +29,7 @@
         let isRecording = false;
         let startTime;
         let timerInterval;
+        let currentAudio = null; // Барои назорат кардани аудио
 
         const menu = document.getElementById("custom-menu");
         const trigger = document.getElementById("menu-trigger");
@@ -42,7 +43,6 @@
         const stopBtn = document.getElementById("stop-btn");
         const recordTimer = document.getElementById("record-timer");
 
-        // --- ИЛОВАИ 1: Тағйири тугма ҳангоми навиштан ---
         inputArea.addEventListener("input", () => {
             if (inputArea.value.trim() !== "") {
                 micBtn.style.display = "none";
@@ -96,11 +96,21 @@
         };
 
         window.playPreview = () => {
+            if (currentAudio) currentAudio.pause(); // Агар ягон аудио бозистода бошад, онро қатъ мекунем
             const url = URL.createObjectURL(audioBlob);
-            new Audio(url).play();
+            currentAudio = new Audio(url);
+            currentAudio.play();
+        };
+
+        window.stopPreview = () => {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0; // Аудиро аз аввал мекунад
+            }
         };
 
         window.cancelAudio = () => {
+            if (currentAudio) { currentAudio.pause(); currentAudio = null; }
             audioBlob = null;
             previewUi.style.display = "none";
             inputArea.style.display = "block";
@@ -133,15 +143,12 @@
                         date: now.toLocaleDateString()
                     });
                     inputArea.value = "";
-                    
-                    // --- ИЛОВАИ 2: Барқарор кардани тугма пас аз ирсол ---
                     sendBtn.style.display = "none";
                     micBtn.style.display = "flex";
                 }
             }
         };
 
-        // --- Core Chat Logic ---
         window.toggleSelect = (msgKey, element) => {
             if (selectedMessages.includes(msgKey)) {
                 selectedMessages = selectedMessages.filter(id => id !== msgKey);
@@ -283,14 +290,8 @@
         @keyframes wave-anim { 0%, 100% { height: 10px; } 50% { height: 25px; } }
         .recording-blink { animation: blink 1s infinite; color: red; }
         @keyframes blink { 50% { opacity: 0; } }
-        #mic-btn img {
-            filter: brightness(0) invert(1);
-            pointer-events: none;
-        }
-        #stop-btn img {
-            filter: brightness(0) invert(1);
-            pointer-events: none;
-        }
+        #mic-btn img { filter: brightness(0) invert(1); pointer-events: none; }
+        #stop-btn img { filter: brightness(0) invert(1); pointer-events: none; }
     </style>
 </head>
 <body>
@@ -332,6 +333,7 @@
 
         <div id="preview-ui">
             <button onclick="playPreview()" class="btn" style="background:#25d366;">▶</button>
+            <button onclick="stopPreview()" class="btn" style="background:orange;">■</button>
             <span>Овози сабтшуда</span>
             <button onclick="cancelAudio()" class="btn" style="background:red;">✕</button>
         </div>
