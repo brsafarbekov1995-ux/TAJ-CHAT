@@ -6,7 +6,7 @@
     <title>TAJ CHAT</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, remove, onChildRemoved, update } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, remove, update } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDgcixLDTz5qVBRpQMfxbX8WpSyff76Z28",
@@ -21,6 +21,7 @@
         let myId = localStorage.getItem("chat_user_id") || "user_" + Math.floor(Math.random() * 1000000);
         localStorage.setItem("chat_user_id", myId);
 
+        let lastDate = "";
         let selectedMessages = [];
         const menu = document.getElementById("custom-menu");
         const trigger = document.getElementById("menu-trigger");
@@ -46,7 +47,6 @@
             }
         });
 
-        // Амалҳои мустақим
         window.copyMessage = () => {
             if (selectedMessages.length > 0) navigator.clipboard.writeText(document.getElementById(selectedMessages[0]).querySelector('.msg-text').innerText);
             menu.classList.remove('show');
@@ -68,10 +68,10 @@
 
         window.showDeleteModal = () => { document.getElementById("delete-modal").style.display = "flex"; menu.classList.remove('show'); };
 
-        // ПОК КАРДАНИ ҲАМА БЕ РАВЗАНА
         window.clearAllMessages = () => {
             remove(messagesRef);
             document.getElementById("chat-box").innerHTML = "";
+            lastDate = ""; // Аз нав барқарор кардани сана
             menu.classList.remove('show');
             trigger.style.visibility = "hidden";
         };
@@ -93,66 +93,86 @@
         window.sendMessage = () => {
             const input = document.getElementById("message-input");
             if (input.value.trim() !== "") {
-                push(messagesRef, { text: input.value, senderId: myId, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                const now = new Date();
+                push(messagesRef, { 
+                    text: input.value, 
+                    senderId: myId, 
+                    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    date: now.toLocaleDateString()
+                });
                 input.value = "";
             }
         };
 
-        onChildRemoved(messagesRef, (data) => document.getElementById(data.key)?.remove());
         onChildAdded(messagesRef, (data) => {
             let hidden = JSON.parse(localStorage.getItem("hidden_msgs") || "[]");
             if (hidden.includes(data.key)) return;
+            
             const msg = data.val();
+            const currentDate = msg.date || "Имрӯз";
+            
+            if (currentDate !== lastDate) {
+                const dateDiv = document.createElement("div");
+                dateDiv.className = "date-divider";
+                dateDiv.innerText = currentDate;
+                document.getElementById("chat-box").appendChild(dateDiv);
+                lastDate = currentDate;
+            }
+
             const div = document.createElement("div");
             div.id = data.key;
-            div.className = msg.senderId === myId ? 'my-message' : 'received-message';
-            div.innerHTML = `<div class="msg-text">${msg.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')}</div><div class="time-stamp">${msg.time}</div>`;
+            div.className = `msg-bubble ${msg.senderId === myId ? 'my-msg' : 'rec-msg'}`;
+            div.innerHTML = `<div class="msg-text">${msg.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')}</div><div class="msg-time">${msg.time}</div>`;
             div.onclick = () => window.toggleSelect(data.key, div);
             document.getElementById("chat-box").appendChild(div);
+            document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background: #f0f0f0; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
-        .header { background: #fff; padding: 15px; margin: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; border-radius: 15px; border: 1px solid #ddd; height: 50px; }
-        .chat-box { flex: 1; padding: 20px; overflow-y: auto; background: #fff; display: flex; flex-direction: column; gap: 10px; }
-        .my-message, .received-message { padding: 10px; max-width: 80%; border-radius: 15px; cursor: pointer; }
-        .my-message { align-self: flex-end; background: #dcf8c6; }
-        .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; }
-        .selected-message { background-color: #add8e6 !important; border: 2px solid #007bff !important; }
+        body { font-family: sans-serif; background: #e5ddd5; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+        .header { background: #075e54; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         
-        #menu-trigger { visibility: hidden; cursor: pointer; font-size: 24px; padding: 0 10px; }
-        #custom-menu { position: absolute; right: 20px; top: 70px; background: white; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); z-index: 9999; width: 220px; padding: 8px 0; opacity: 0; visibility: hidden; transition: all 0.2s; }
+        .date-divider { align-self: center; background: #e1f3fb; color: #555; padding: 4px 12px; border-radius: 8px; font-size: 11px; margin: 10px 0; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+        
+        .msg-bubble { position: relative; padding: 8px 10px 22px 10px; border-radius: 8px; max-width: 80%; width: fit-content; cursor: pointer; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+        .my-msg { align-self: flex-end; background: #dcf8c6; }
+        .rec-msg { align-self: flex-start; background: white; }
+        .selected-message { background-color: #95c7f0 !important; }
+        
+        .msg-text { font-size: 15px; word-wrap: break-word; }
+        .msg-time { position: absolute; bottom: 4px; right: 8px; font-size: 10px; color: #777; }
+        
+        #menu-trigger { visibility: hidden; cursor: pointer; font-size: 24px; padding: 0 5px; }
+        #custom-menu { position: absolute; right: 20px; top: 60px; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 9999; width: 180px; padding: 5px 0; opacity: 0; visibility: hidden; transition: 0.2s; }
         #custom-menu.show { opacity: 1; visibility: visible; }
-        #custom-menu button { display: block; width: 100%; padding: 12px 20px; border: none; background: none; text-align: left; cursor: pointer; }
+        #custom-menu button { display: block; width: 100%; padding: 10px 15px; border: none; background: none; text-align: left; cursor: pointer; }
         
         .modal-overlay { display: none; position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 3000; }
-        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
-        .modal-content button { display: block; width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; }
+        .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; }
         
-        .input-panel { padding: 10px; background: #fff; display: flex; gap: 8px; border-top: 1px solid #ddd; }
-        textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; height: 45px; resize: none; }
-        .btn { width: 45px; border-radius: 50%; border: none; background: #007bff; color: white; cursor: pointer; }
+        .input-panel { padding: 10px; background: #f0f0f0; display: flex; gap: 8px; align-items: center; }
+        textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; height: 40px; resize: none; }
+        .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #075e54; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="custom-menu">
         <button onclick="copyMessage()">📋 Нусха кардан</button>
         <button onclick="openEditModal()">✏️ Таҳрир</button>
-        <button onclick="showDeleteModal()" style="color: red;">🗑️ Нест кардан...</button>
-        <button onclick="clearAllMessages()" style="color: orange;">🧹 Пок кардани чат</button>
+        <button onclick="showDeleteModal()">🗑️ Нест кардан</button>
+        <button onclick="clearAllMessages()" style="color: red;">🧹 Пок кардани чат</button>
     </div>
     <div id="delete-modal" class="modal-overlay" onclick="if(event.target==this) closeModal('delete-modal')">
-        <div class="modal-content"><h3>Нест кардан:</h3><button onclick="deleteSelected('me')">👁️ Аз худам</button><button onclick="deleteSelected('everyone')" style="background:#ff4d4d;color:white;">🗑️ Аз ҳама</button></div>
+        <div class="modal-content"><h3>Нест кардан:</h3><button onclick="deleteSelected('me')">👁️ Аз худам</button><button onclick="deleteSelected('everyone')" style="color:red;">🗑️ Аз ҳама</button></div>
     </div>
     <div id="edit-modal" class="modal-overlay" onclick="if(event.target==this) closeModal('edit-modal')">
-        <div class="modal-content"><textarea id="edit-input" style="width: 100%; height: 80px;"></textarea><button onclick="saveEdit()" style="background:#007bff;color:white;">Сабт кардан</button></div>
+        <div class="modal-content"><textarea id="edit-input" style="width: 100%; height: 60px;"></textarea><button onclick="saveEdit()">Сабт кардан</button></div>
     </div>
     
     <div class="header">
-        <span></span> 
-        <div>TAJ CHAT</div> 
-        <span id="menu-trigger" onclick="openMenuAtTop(event)">⋮</span>
+        <span></span> <div>TAJ CHAT</div> <span id="menu-trigger" onclick="openMenuAtTop(event)">⋮</span>
     </div>
     
     <div class="chat-box" id="chat-box"></div>
