@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TAJ CHAT</title>
+    <title>TAJ CHAT - Пурра</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getDatabase, ref, push, onChildAdded, remove, update, onChildRemoved, onChildChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDgcixLDTz5qVBRpQMfxbX8WpSyff76Z28",
             databaseURL: "https://taj-chat-c87de-default-rtdb.firebaseio.com",
@@ -18,23 +19,20 @@
         const db = getDatabase(app);
         const messagesRef = ref(db, 'messages');
 
+        // Идентификатори истифодабаранда
         let myId = localStorage.getItem("chat_user_id") || "user_" + Math.floor(Math.random() * 1000000);
         localStorage.setItem("chat_user_id", myId);
 
+        // Тағйирёбандаҳои ҷаҳонӣ
         let lastDate = "";
         let selectedMessages = [];
         let mediaRecorder;
         let audioChunks = [];
         let audioBlob = null;
-        let isRecording = false;
-        let startTime;
         let timerInterval;
         let currentAudio = null; 
 
-        const menu = document.getElementById("custom-menu");
-        const trigger = document.getElementById("menu-trigger");
-
-        // UI Elements
+        // Элементҳои UI
         const inputArea = document.getElementById("message-input");
         const recordingUi = document.getElementById("recording-ui");
         const previewUi = document.getElementById("preview-ui");
@@ -42,7 +40,10 @@
         const sendBtn = document.getElementById("send-btn");
         const stopBtn = document.getElementById("stop-btn");
         const recordTimer = document.getElementById("record-timer");
+        const menu = document.getElementById("custom-menu");
+        const trigger = document.getElementById("menu-trigger");
 
+        // --- Логикаи воридкунии матн ---
         inputArea.addEventListener("input", () => {
             if (inputArea.value.trim() !== "") {
                 micBtn.style.display = "none";
@@ -55,13 +56,14 @@
 
         window.closeModal = (id) => { document.getElementById(id).style.display = "none"; };
 
-        // --- Audio Logic ---
+        // --- Логикаи Аудио ---
         micBtn.onclick = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
                 mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                
                 mediaRecorder.onstop = () => {
                     audioBlob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
                     recordingUi.style.display = "none";
@@ -69,23 +71,17 @@
                 };
 
                 mediaRecorder.start();
-                isRecording = true;
-                
                 inputArea.style.display = "none";
                 micBtn.style.display = "none";
                 recordingUi.style.display = "flex";
                 stopBtn.style.display = "flex";
 
                 let seconds = 0;
-                startTime = Date.now();
                 timerInterval = setInterval(() => {
                     seconds++;
                     recordTimer.innerText = new Date(seconds * 1000).toISOString().substr(14, 5);
                 }, 1000);
-
-            } catch (err) {
-                alert("Иҷозат барои микрофон лозим аст!");
-            }
+            } catch (err) { alert("Иҷозат барои микрофон лозим аст!"); }
         };
 
         stopBtn.onclick = () => {
@@ -103,10 +99,7 @@
         };
 
         window.stopPreview = () => {
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0; 
-            }
+            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
         };
 
         window.cancelAudio = () => {
@@ -118,6 +111,7 @@
             sendBtn.style.display = "none";
         };
 
+        // --- Ирсоли Паём ---
         window.sendMessage = async () => {
             if (audioBlob) {
                 const reader = new FileReader();
@@ -133,22 +127,21 @@
                     });
                     cancelAudio();
                 };
-            } else {
-                if (inputArea.value.trim() !== "") {
-                    const now = new Date();
-                    push(messagesRef, { 
-                        text: inputArea.value, 
-                        senderId: myId, 
-                        time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        date: now.toLocaleDateString()
-                    });
-                    inputArea.value = "";
-                    sendBtn.style.display = "none";
-                    micBtn.style.display = "flex";
-                }
+            } else if (inputArea.value.trim() !== "") {
+                const now = new Date();
+                push(messagesRef, { 
+                    text: inputArea.value, 
+                    senderId: myId, 
+                    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    date: now.toLocaleDateString()
+                });
+                inputArea.value = "";
+                sendBtn.style.display = "none";
+                micBtn.style.display = "flex";
             }
         };
 
+        // --- Функсияҳои Меню ва Идоракунӣ ---
         window.toggleSelect = (msgKey, element) => {
             if (selectedMessages.includes(msgKey)) {
                 selectedMessages = selectedMessages.filter(id => id !== msgKey);
@@ -161,7 +154,10 @@
         };
 
         window.openMenuAtTop = (e) => { e.stopPropagation(); menu.classList.toggle('show'); };
-        document.addEventListener("click", (e) => { if (!e.target.closest('#custom-menu') && !e.target.closest('#menu-trigger')) menu.classList.remove('show'); });
+        
+        document.addEventListener("click", (e) => { 
+            if (!e.target.closest('#custom-menu') && !e.target.closest('#menu-trigger')) menu.classList.remove('show'); 
+        });
 
         window.copyMessage = () => {
             if (selectedMessages.length > 0) navigator.clipboard.writeText(document.getElementById(selectedMessages[0]).querySelector('.msg-text')?.innerText || "");
@@ -217,6 +213,7 @@
             closeModal('delete-modal');
         };
 
+        // --- Рендери Паёмҳо ---
         onChildAdded(messagesRef, (data) => {
             let hidden = JSON.parse(localStorage.getItem("hidden_msgs") || "[]");
             if (hidden.includes(data.key)) return;
@@ -246,24 +243,9 @@
                 
                 const playBtn = div.querySelector(`#play-${data.key}`);
                 const stopBtn = div.querySelector(`#stop-${data.key}`);
-
-                playBtn.onclick = () => {
-                    audioObj.play();
-                    playBtn.style.display = "none";
-                    stopBtn.style.display = "block";
-                };
-
-                stopBtn.onclick = () => {
-                    audioObj.pause();
-                    audioObj.currentTime = 0;
-                    stopBtn.style.display = "none";
-                    playBtn.style.display = "block";
-                };
-
-                audioObj.onended = () => {
-                    stopBtn.style.display = "none";
-                    playBtn.style.display = "block";
-                };
+                playBtn.onclick = () => { audioObj.play(); playBtn.style.display = "none"; stopBtn.style.display = "block"; };
+                stopBtn.onclick = () => { audioObj.pause(); audioObj.currentTime = 0; stopBtn.style.display = "none"; playBtn.style.display = "block"; };
+                audioObj.onended = () => { stopBtn.style.display = "none"; playBtn.style.display = "block"; };
             } else {
                 div.innerHTML = `<div class="msg-text">${msg.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')}</div><div class="msg-time">${msg.time}</div>`;
             }
@@ -274,33 +256,30 @@
         });
 
         onChildRemoved(messagesRef, (data) => { const element = document.getElementById(data.key); if (element) element.remove(); });
+        
         onChildChanged(messagesRef, (data) => {
             const msg = data.val();
             const element = document.getElementById(data.key);
             if (element && msg.text) { element.querySelector('.msg-text').innerHTML = msg.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>'); }
         });
 
-        // --- ТАШХИСИ ПАЙВАСТШАВӢ (Ислоҳшуда) ---
+        // --- Санҷиши Интернет ---
         function updateOnlineStatus() {
             const indicator = document.getElementById("loading-indicator");
             const body = document.body;
-            
             if (!navigator.onLine) {
                 indicator.style.display = "flex"; 
                 body.classList.add("offline-mode");
-                console.log("Интернет қатъ шуд.");
             } else {
                 indicator.style.display = "none";
                 body.classList.remove("offline-mode");
-                console.log("Интернет пайваст шуд.");
             }
         }
-
         window.addEventListener('online', updateOnlineStatus);
         window.addEventListener('offline', updateOnlineStatus);
         updateOnlineStatus();
-
     </script>
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #e5ddd5; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
@@ -330,7 +309,7 @@
         .recording-blink { animation: blink 1s infinite; color: red; }
         @keyframes blink { 50% { opacity: 0; } }
         .offline-mode { pointer-events: none; opacity: 0.5; filter: grayscale(1); }
-        #loading-indicator { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(3px); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; text-align: center; pointer-events: all; }
+        #loading-indicator { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(3px); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
         .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #075e54; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -340,6 +319,7 @@
         <div class="spinner"></div>
         <p>Интернет нест, интизор шавед...</p>
     </div>
+    
     <div id="custom-menu">
         <button onclick="copyMessage()">📋 Нусха кардан</button>
         <button onclick="openEditModal()">✏️ Таҳрир</button>
