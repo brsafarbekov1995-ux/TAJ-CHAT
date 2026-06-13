@@ -30,7 +30,6 @@
 
         window.closeModal = (id) => { document.getElementById(id).style.display = "none"; };
 
-        // Интихоби паём ва идоракунии намоёнии тугмаи 3 нуқта
         window.toggleSelect = (msgKey, element) => {
             if (selectedMessages.includes(msgKey)) {
                 selectedMessages = selectedMessages.filter(id => id !== msgKey);
@@ -40,16 +39,15 @@
                 element.classList.add('selected-message');
             }
             
-            // Агар паём интихоб шуда бошад, тугмаи 3 нуқта пайдо мешавад
-            trigger.style.display = selectedMessages.length > 0 ? "block" : "none";
+            // Агар паём интихоб шавад - намоён, агар не - ноаён (аммо ҷой мемонад)
+            trigger.style.visibility = selectedMessages.length > 0 ? "visible" : "hidden";
         };
 
         window.openMenuAtTop = (e) => {
-            e.stopPropagation(); 
+            e.stopPropagation();
             menu.classList.toggle('show');
         };
 
-        // Пӯшидани меню ҳангоми клик дар ҷои холӣ
         document.addEventListener("click", (e) => {
             if (!e.target.closest('#custom-menu') && !e.target.closest('#menu-trigger')) {
                 menu.classList.remove('show');
@@ -90,14 +88,14 @@
                 } else remove(ref(db, 'messages/' + msgKey));
             });
             selectedMessages = []; 
-            trigger.style.display = "none"; // Пинҳон кардани тугма
+            trigger.style.visibility = "hidden"; // Пинҳон кардан
             closeModal('delete-modal');
         };
 
         window.clearMyChat = (type) => {
             if (type === 'me') { document.getElementById("chat-box").innerHTML = ""; localStorage.setItem("hidden_msgs", "[]"); }
             else if (type === 'everyone' && confirm("Барои ҲАМА пок шавад?")) { remove(messagesRef); document.getElementById("chat-box").innerHTML = ""; }
-            trigger.style.display = "none"; // Пинҳон кардани тугма
+            trigger.style.visibility = "hidden"; // Пинҳон кардан
             closeModal('clear-modal');
         };
 
@@ -126,15 +124,15 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #f0f0f0; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
-        .header { background: #fff; padding: 15px; margin: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; border-radius: 15px; border: 1px solid #ddd; }
+        .header { background: #fff; padding: 15px; margin: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; border-radius: 15px; border: 1px solid #ddd; height: 50px; }
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; background: #fff; display: flex; flex-direction: column; gap: 10px; }
         .my-message, .received-message { padding: 10px; max-width: 80%; border-radius: 15px; cursor: pointer; }
         .my-message { align-self: flex-end; background: #dcf8c6; }
         .received-message { align-self: flex-start; background: #fff; border: 1px solid #ddd; }
         .selected-message { background-color: #add8e6 !important; border: 2px solid #007bff !important; }
         
-        /* Тугмаи 3 нуқта дар аввал пинҳон аст */
-        #menu-trigger { display: none; cursor: pointer; font-size: 24px; padding: 0 10px; }
+        /* Тугма дар аввал ноаён аст, аммо ҷой мегирад */
+        #menu-trigger { visibility: hidden; cursor: pointer; font-size: 24px; padding: 0 10px; }
         
         #custom-menu { position: absolute; right: 20px; top: 70px; background: white; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); z-index: 9999; width: 220px; padding: 8px 0; opacity: 0; visibility: hidden; transition: all 0.2s; }
         #custom-menu.show { opacity: 1; visibility: visible; }
