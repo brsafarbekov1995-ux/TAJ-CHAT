@@ -280,9 +280,22 @@
     filter: brightness(0) invert(1); /* Ин рангро сафед мекунад, то бо заминаи сурх мувофиқ бошад */
     pointer-events: none;
 }
+button, textarea, input, div {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+button:focus, textarea:focus, input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
     </style>
 </head>
 <body>
+body {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none; /* Барои он ки матни интерфейс ҳангоми пахши зуд интихоб (highlight) нашавад */
+}
     <div id="custom-menu">
         <button onclick="copyMessage()">📋 Нусха кардан</button>
         <button onclick="openEditModal()">✏️ Таҳрир</button>
