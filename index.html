@@ -261,6 +261,42 @@ messageInput.addEventListener("input", () => {
         sendBtn.style.display = "none";
     }
 }); 
+// Дар болои скрипт, дар баробари дигар тағйирёбандаҳо илова кунед:
+let previewAudio = null; 
+
+// Ин функсияро ба ҷои playPreview иваз кунед:
+window.togglePreview = (btn) => {
+    // Агар аудио аллакай навозиш шуда истода бошад
+    if (previewAudio && !previewAudio.paused) {
+        previewAudio.pause();
+        previewAudio.currentTime = 0; // Ба аввал бармегардонем
+        btn.innerText = "▶"; // Тугмаро Play мекунем
+    } else {
+        // Агар аудио дар ҳоли навозиш набошад
+        const url = URL.createObjectURL(audioBlob);
+        previewAudio = new Audio(url);
+        previewAudio.play();
+        btn.innerText = "■"; // Тугмаро Stop мекунем
+
+        // Вақте ки аудио тамом шуд, тугмаро дубора Play мекунем
+        previewAudio.onended = () => {
+            btn.innerText = "▶";
+        };
+    }
+};
+
+// Дар функсияи cancelAudio низ аудиоро қатъ кунед:
+window.cancelAudio = () => {
+    if (previewAudio) {
+        previewAudio.pause();
+        previewAudio = null;
+    }
+    audioBlob = null;
+    previewUi.style.display = "none";
+    inputArea.style.display = "block";
+    micBtn.style.display = "flex";
+    sendBtn.style.display = "none";
+};
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -343,10 +379,10 @@ messageInput.addEventListener("input", () => {
         </div>
 
         <div id="preview-ui">
-            <button onclick="playPreview()" class="btn" style="background:#25d366;">▶</button>
-            <span>Овози сабтшуда</span>
-            <button onclick="cancelAudio()" class="btn" style="background:red;">✕</button>
-        </div>
+    <button onclick="togglePreview(this)" class="btn" style="background:#25d366;">▶</button>
+    <span>Овози сабтшуда</span>
+    <button onclick="cancelAudio()" class="btn" style="background:red;">✕</button>
+</div>
         
        <button id="mic-btn" class="btn">
     <img src="https://cdn-icons-png.flaticon.com/512/3364/3364184.png" alt="Mic" style="width: 24px; height: 24px;">
