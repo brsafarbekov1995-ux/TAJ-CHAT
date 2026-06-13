@@ -40,41 +40,23 @@
         };
 
         window.openMenuAtTop = (e) => { e.stopPropagation(); menu.classList.toggle('show'); };
+        document.addEventListener("click", (e) => { if (!e.target.closest('#custom-menu') && !e.target.closest('#menu-trigger')) menu.classList.remove('show'); });
 
-        document.addEventListener("click", (e) => {
-            if (!e.target.closest('#custom-menu') && !e.target.closest('#menu-trigger')) {
-                menu.classList.remove('show');
-            }
-        });
-
-        window.copyMessage = () => {
-            if (selectedMessages.length > 0) navigator.clipboard.writeText(document.getElementById(selectedMessages[0]).querySelector('.msg-text').innerText);
-            menu.classList.remove('show');
+        window.copyMessage = () => { if (selectedMessages.length > 0) navigator.clipboard.writeText(document.getElementById(selectedMessages[0]).querySelector('.msg-text').innerText); menu.classList.remove('show'); };
+        
+        window.openEditModal = () => { 
+            if (selectedMessages.length > 0) { 
+                document.getElementById("edit-input").value = document.getElementById(selectedMessages[0]).querySelector('.msg-text').innerText; 
+                document.getElementById("edit-modal").style.display = "flex"; 
+            } 
+            menu.classList.remove('show'); 
         };
 
-        window.openEditModal = () => {
-            if (selectedMessages.length > 0) {
-                document.getElementById("edit-input").value = document.getElementById(selectedMessages[0]).querySelector('.msg-text').innerText;
-                document.getElementById("edit-modal").style.display = "flex";
-            }
-            menu.classList.remove('show');
-        };
-
-        window.saveEdit = () => {
-            const newText = document.getElementById("edit-input").value;
-            if (newText && selectedMessages.length > 0) update(ref(db, 'messages/' + selectedMessages[0]), { text: newText });
-            closeModal('edit-modal');
-        };
-
+        window.saveEdit = () => { const newText = document.getElementById("edit-input").value; if (newText && selectedMessages.length > 0) update(ref(db, 'messages/' + selectedMessages[0]), { text: newText }); closeModal('edit-modal'); };
+        
         window.showDeleteModal = () => { document.getElementById("delete-modal").style.display = "flex"; menu.classList.remove('show'); };
 
-        window.clearAllMessages = () => {
-            remove(messagesRef);
-            document.getElementById("chat-box").innerHTML = "";
-            lastDate = ""; // Аз нав барқарор кардани сана
-            menu.classList.remove('show');
-            trigger.style.visibility = "hidden";
-        };
+        window.clearAllMessages = () => { remove(messagesRef); document.getElementById("chat-box").innerHTML = ""; lastDate = ""; menu.classList.remove('show'); trigger.style.visibility = "hidden"; };
 
         window.deleteSelected = (type) => {
             selectedMessages.forEach(msgKey => {
@@ -85,21 +67,14 @@
                     document.getElementById(msgKey)?.remove();
                 } else remove(ref(db, 'messages/' + msgKey));
             });
-            selectedMessages = []; 
-            trigger.style.visibility = "hidden";
-            closeModal('delete-modal');
+            selectedMessages = []; trigger.style.visibility = "hidden"; closeModal('delete-modal');
         };
 
         window.sendMessage = () => {
             const input = document.getElementById("message-input");
             if (input.value.trim() !== "") {
                 const now = new Date();
-                push(messagesRef, { 
-                    text: input.value, 
-                    senderId: myId, 
-                    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    date: now.toLocaleDateString()
-                });
+                push(messagesRef, { text: input.value, senderId: myId, time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: now.toLocaleDateString() });
                 input.value = "";
             }
         };
@@ -107,22 +82,18 @@
         onChildAdded(messagesRef, (data) => {
             let hidden = JSON.parse(localStorage.getItem("hidden_msgs") || "[]");
             if (hidden.includes(data.key)) return;
-            
             const msg = data.val();
-            const currentDate = msg.date || "Имрӯз";
-            
-            if (currentDate !== lastDate) {
+            if (msg.date !== lastDate) {
                 const dateDiv = document.createElement("div");
                 dateDiv.className = "date-divider";
-                dateDiv.innerText = currentDate;
+                dateDiv.innerText = msg.date;
                 document.getElementById("chat-box").appendChild(dateDiv);
-                lastDate = currentDate;
+                lastDate = msg.date;
             }
-
             const div = document.createElement("div");
             div.id = data.key;
             div.className = `msg-bubble ${msg.senderId === myId ? 'my-msg' : 'rec-msg'}`;
-            div.innerHTML = `<div class="msg-text">${msg.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')}</div><div class="msg-time">${msg.time}</div>`;
+            div.innerHTML = `<div class="msg-text">${msg.text}</div><div class="msg-time">${msg.time}</div>`;
             div.onclick = () => window.toggleSelect(data.key, div);
             document.getElementById("chat-box").appendChild(div);
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
@@ -133,24 +104,22 @@
         body { font-family: sans-serif; background: #e5ddd5; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
         .header { background: #075e54; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        
-        .date-divider { align-self: center; background: #e1f3fb; color: #555; padding: 4px 12px; border-radius: 8px; font-size: 11px; margin: 10px 0; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-        
+        .date-divider { align-self: center; background: #e1f3fb; padding: 5px 15px; border-radius: 10px; font-size: 12px; margin: 10px 0; }
         .msg-bubble { position: relative; padding: 8px 10px 22px 10px; border-radius: 8px; max-width: 80%; width: fit-content; cursor: pointer; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
         .my-msg { align-self: flex-end; background: #dcf8c6; }
         .rec-msg { align-self: flex-start; background: white; }
         .selected-message { background-color: #95c7f0 !important; }
+        .msg-text { font-size: 15px; }
+        .msg-time { position: absolute; bottom: 4px; right: 8px; font-size: 9px; color: #777; }
         
-        .msg-text { font-size: 15px; word-wrap: break-word; }
-        .msg-time { position: absolute; bottom: 4px; right: 8px; font-size: 10px; color: #777; }
+        .modal-overlay { display: none; position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 9999; }
+        .modal-content { background: white; padding: 20px; border-radius: 15px; width: 85%; max-width: 300px; text-align: center; }
+        .modal-content button { width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: #f0f0f0; }
         
         #menu-trigger { visibility: hidden; cursor: pointer; font-size: 24px; padding: 0 5px; }
-        #custom-menu { position: absolute; right: 20px; top: 60px; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 9999; width: 180px; padding: 5px 0; opacity: 0; visibility: hidden; transition: 0.2s; }
-        #custom-menu.show { opacity: 1; visibility: visible; }
-        #custom-menu button { display: block; width: 100%; padding: 10px 15px; border: none; background: none; text-align: left; cursor: pointer; }
-        
-        .modal-overlay { display: none; position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 3000; }
-        .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; }
+        #custom-menu { position: absolute; right: 20px; top: 60px; background: white; border-radius: 10px; padding: 5px; display: none; z-index: 999; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        #custom-menu.show { display: block; }
+        #custom-menu button { display: block; width: 100%; padding: 10px; border: none; background: none; text-align: left; cursor: pointer; }
         
         .input-panel { padding: 10px; background: #f0f0f0; display: flex; gap: 8px; align-items: center; }
         textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; height: 40px; resize: none; }
@@ -159,22 +128,26 @@
 </head>
 <body>
     <div id="custom-menu">
-        <button onclick="copyMessage()">📋 Нусха кардан</button>
+        <button onclick="copyMessage()">📋 Нусха</button>
         <button onclick="openEditModal()">✏️ Таҳрир</button>
         <button onclick="showDeleteModal()">🗑️ Нест кардан</button>
         <button onclick="clearAllMessages()" style="color: red;">🧹 Пок кардани чат</button>
     </div>
-    <div id="delete-modal" class="modal-overlay" onclick="if(event.target==this) closeModal('delete-modal')">
-        <div class="modal-content"><h3>Нест кардан:</h3><button onclick="deleteSelected('me')">👁️ Аз худам</button><button onclick="deleteSelected('everyone')" style="color:red;">🗑️ Аз ҳама</button></div>
+    <div id="delete-modal" class="modal-overlay" onclick="closeModal('delete-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 style="margin-bottom: 15px;">Нест кардан?</h3>
+            <button onclick="deleteSelected('me')">Аз худам</button>
+            <button onclick="deleteSelected('everyone')" style="background:red; color:white;">Аз ҳама</button>
+        </div>
     </div>
-    <div id="edit-modal" class="modal-overlay" onclick="if(event.target==this) closeModal('edit-modal')">
-        <div class="modal-content"><textarea id="edit-input" style="width: 100%; height: 60px;"></textarea><button onclick="saveEdit()">Сабт кардан</button></div>
+    <div id="edit-modal" class="modal-overlay" onclick="closeModal('edit-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <textarea id="edit-input" style="width: 100%; height: 60px; margin-bottom: 10px;"></textarea>
+            <button onclick="saveEdit()" style="background:#075e54; color:white;">Сабт</button>
+        </div>
     </div>
     
-    <div class="header">
-        <span></span> <div>TAJ CHAT</div> <span id="menu-trigger" onclick="openMenuAtTop(event)">⋮</span>
-    </div>
-    
+    <div class="header"><span></span> <div>TAJ CHAT</div> <span id="menu-trigger" onclick="openMenuAtTop(event)">⋮</span></div>
     <div class="chat-box" id="chat-box"></div>
     <div class="input-panel">
         <textarea id="message-input" placeholder="Паём..."></textarea>
