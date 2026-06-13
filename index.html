@@ -6,7 +6,7 @@
     <title>TAJ CHAT</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, remove, update } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, remove, update, onChildRemoved, onChildChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDgcixLDTz5qVBRpQMfxbX8WpSyff76Z28",
@@ -71,7 +71,7 @@
         window.clearAllMessages = () => {
             remove(messagesRef);
             document.getElementById("chat-box").innerHTML = "";
-            lastDate = ""; // Аз нав барқарор кардани сана
+            lastDate = ""; 
             menu.classList.remove('show');
             trigger.style.visibility = "hidden";
         };
@@ -104,6 +104,7 @@
             }
         };
 
+        // --- БАРОИ ТАҒЙИРОТИ РЕАЛ-ТАЙМ ---
         onChildAdded(messagesRef, (data) => {
             let hidden = JSON.parse(localStorage.getItem("hidden_msgs") || "[]");
             if (hidden.includes(data.key)) return;
@@ -127,31 +128,47 @@
             document.getElementById("chat-box").appendChild(div);
             document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
         });
+
+        // Иловаи функсияҳо барои нест кардан ва таҳрири автоматикӣ
+        onChildRemoved(messagesRef, (data) => {
+            const element = document.getElementById(data.key);
+            if (element) element.remove();
+        });
+
+        onChildChanged(messagesRef, (data) => {
+            const msg = data.val();
+            const element = document.getElementById(data.key);
+            if (element) {
+                element.querySelector('.msg-text').innerHTML = msg.text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+            }
+        });
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #e5ddd5; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
         .header { background: #075e54; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        
         .date-divider { align-self: center; background: #e1f3fb; color: #555; padding: 4px 12px; border-radius: 8px; font-size: 11px; margin: 10px 0; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-        
         .msg-bubble { position: relative; padding: 8px 10px 22px 10px; border-radius: 8px; max-width: 80%; width: fit-content; cursor: pointer; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
         .my-msg { align-self: flex-end; background: #dcf8c6; }
         .rec-msg { align-self: flex-start; background: white; }
         .selected-message { background-color: #95c7f0 !important; }
-        
         .msg-text { font-size: 15px; word-wrap: break-word; }
         .msg-time { position: absolute; bottom: 4px; right: 8px; font-size: 10px; color: #777; }
-        
         #menu-trigger { visibility: hidden; cursor: pointer; font-size: 24px; padding: 0 5px; }
         #custom-menu { position: absolute; right: 20px; top: 60px; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 9999; width: 180px; padding: 5px 0; opacity: 0; visibility: hidden; transition: 0.2s; }
         #custom-menu.show { opacity: 1; visibility: visible; }
         #custom-menu button { display: block; width: 100%; padding: 10px 15px; border: none; background: none; text-align: left; cursor: pointer; }
-        
         .modal-overlay { display: none; position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 3000; }
-        .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; }
         
+        /* Дизайни зебои тугмаҳо */
+        .btn-action { display: block; width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 14px; }
+        .btn-me { background: #e0e0e0; color: #333; }
+        .btn-everyone { background: #ff4757; color: white; }
+        .btn-cancel { background: transparent; color: #666; margin-top: 10px; }
+        .btn-action:hover { opacity: 0.8; }
+
         .input-panel { padding: 10px; background: #f0f0f0; display: flex; gap: 8px; align-items: center; }
         textarea { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; height: 40px; resize: none; }
         .btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: #075e54; color: white; cursor: pointer; }
@@ -164,11 +181,18 @@
         <button onclick="showDeleteModal()">🗑️ Нест кардан</button>
         <button onclick="clearAllMessages()" style="color: red;">🧹 Пок кардани чат</button>
     </div>
+    
     <div id="delete-modal" class="modal-overlay" onclick="if(event.target==this) closeModal('delete-modal')">
-        <div class="modal-content"><h3>Нест кардан:</h3><button onclick="deleteSelected('me')">👁️ Аз худам</button><button onclick="deleteSelected('everyone')" style="color:red;">🗑️ Аз ҳама</button></div>
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px;">Нест кардани паём?</h3>
+            <button class="btn-action btn-me" onclick="deleteSelected('me')">👁️ Аз экрани ман</button>
+            <button class="btn-action btn-everyone" onclick="deleteSelected('everyone')">🗑️ Аз ҳама (барои ҳама)</button>
+            <button class="btn-action btn-cancel" onclick="closeModal('delete-modal')">Бекор кардан</button>
+        </div>
     </div>
+    
     <div id="edit-modal" class="modal-overlay" onclick="if(event.target==this) closeModal('edit-modal')">
-        <div class="modal-content"><textarea id="edit-input" style="width: 100%; height: 60px;"></textarea><button onclick="saveEdit()">Сабт кардан</button></div>
+        <div class="modal-content"><textarea id="edit-input" style="width: 100%; height: 60px; margin-bottom:10px;"></textarea><button class="btn-action" onclick="saveEdit()">Сабт кардан</button></div>
     </div>
     
     <div class="header">
